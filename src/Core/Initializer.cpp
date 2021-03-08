@@ -21,8 +21,8 @@ Initializer::Initializer(
     relative_depth_error_weight_(relative_depth_error_weight) {
 }
 
-// Estimate camera pose candidates and initial points by several frames.
-// Currently we only support two frames as input.
+/** Estimate camera pose candidates and initial points by several frames.
+ Currently we only support two frames as input. */
 void Initializer::GetInitialModelData(std::vector<std::unique_ptr<ModelData>>* model_states) {
   model_states->clear();
   CHECK_EQ(curve_extractors_.size(), 2);
@@ -138,7 +138,7 @@ void Initializer::GetInitialModelData(std::vector<std::unique_ptr<ModelData>>* m
     }
   }
   average_trans /= model_states->size();
-  if (average_trans < 0.03) {
+  if (average_trans < 0.03) { // Potrebbe essere il treshold di cui si parla a pag 0:6, quindi potrebbe essere la distanza della camera nei due frame considerati
     model_states->clear();
   }
   LOG(INFO) << "Initialize: Totally " << model_states->size() << " pose candidates.";

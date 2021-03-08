@@ -17,7 +17,7 @@
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
-  FLAGS_minloglevel = 3; // LOG level: 3 -> FATAL
+  FLAGS_minloglevel = 0; // LOG level: 3 -> FATAL
   LOG(INFO) << "Hello Wooden!";
 
 #ifdef USE_GUI
