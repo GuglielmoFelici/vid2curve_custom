@@ -122,6 +122,9 @@ void Reconstructor::Run() {
             ++pd; // Progress display -guglielmo
         }
 
+        // Qui vengono dati altri frame in pasto ai modelli. Dopodiché i modelli vengono inseriti in new_models, a patto che non siano già presenti
+        // modelli con un movimento di camera simile. Gli score vengono aggiornati con una media pesata (current_model->Score() * 0.3 + (-pr.first) * 0.7;)
+        // Vengono poi eliminati tutti i modelli con uno score superiore a un treshold, e viene scelto il primo elemento rimanente come model_candidate.
         for (int frame_id = initial_frame_id + 1; frame_id <= initial_frame_id + kMaxTryFrameN; frame_id++) {
             ++pd;
             std::set<std::pair<double, Model *>> new_models;
