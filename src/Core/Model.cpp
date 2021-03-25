@@ -400,6 +400,7 @@ void Model::DeleteOutliers() {
     UpdateTangs();
 }
 
+/** Monster code -guglielmo */
 void Model::AdjustPoints(Graph *graph) {
     CHECK(graph != nullptr);
     CHECK_EQ(points_.size(), points_history_.size());
@@ -3013,6 +3014,7 @@ void Model::UpdateSpanningTree() {
     spanning_tree_ = new SpanningTree(points_, octree_, hope_dist_ * 2.0, hope_dist_, 4);
 }
 
+/** Aggiorna spanning_tree_ e points_radius_3d_ */
 void Model::UpdateDataStructure(bool update_3d_radius) {
     StopWatch stop_watch;
     // First, update spanning tree for matching algorothm.

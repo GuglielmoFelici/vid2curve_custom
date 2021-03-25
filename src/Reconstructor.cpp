@@ -69,8 +69,8 @@ void Reconstructor::Run() {
     // Possible method 1.
     if (reconstruction_method_ == "POSE_CANDIDATES") {
         extractors_.clear();
-        PushNewExtractors(1);
-        // Questa dovrebbe essere la computazione delle posizioni iniziali della camera e della curva 3D iniziale   -guglielmo
+        PushNewExtractors(1); // Un extractor contiene varie informazioni circa un frame, compresa la prob_map -guglielmo
+        // Questa è la computazione delle posizioni iniziali della camera e della curva 3D iniziale   -guglielmo
         // Greedy.
         std::vector<std::unique_ptr<ModelData>> model_states;
         int initial_frame_id = -1;
@@ -91,9 +91,10 @@ void Reconstructor::Run() {
                 break;
             }
         }
+        // Arrivati qui, in model_states sono presenti dei candidati
 
         const int kMinTryFrameN = 10;
-        const int kMaxTryFrameN = 26; // era 40 -guglielmo todo
+        const int kMaxTryFrameN = 40;
         const int kMinContinuousN = 10;
         CHECK_GT(n_views_, kMaxTryFrameN + initial_frame_id);
         PushNewExtractors(kMaxTryFrameN);
@@ -104,11 +105,15 @@ void Reconstructor::Run() {
         const double kEraseRatio = 1.3;
 
         std::set<std::pair<double, Model *>> current_models;
+        // model_states è stato popolato da Initializers, qualche riga in alto -guglielmo
         for (const auto &model_state : model_states) {
             auto current_model = new Model(model_state.get(), ptree_, global_data_pool_);
             current_model->Update();
             current_models.emplace(-current_model->Score(), current_model); // emplace = place if not present -guglielmo
         }
+
+        // Arrivati qui, è stato fatto l'update() dei modelli creati a partire dai candidati in model_states.
+        // I modelli sono stati poi inseriti in current_models associati ai rispettivi Score -guglielmo
 
         Model *model_candidate = nullptr;
         int next_frame_id = initial_frame_id + 1;
@@ -182,7 +187,7 @@ void Reconstructor::Run() {
             }
         }
 
-        // Main loop -guglielmo
+        // Main loop, si lavora sul model_candidate -guglielmo
 
         for (int frame_id = next_frame_id; frame_id < n_views_; frame_id++) {
             ++pd;
@@ -214,13 +219,14 @@ void Reconstructor::Initialize() {
     LOG(INFO) << "Initialize: End";
 }
 
+/** Un extractor dovrebbe mantenere informazioni circa un frame segmentato */
 void Reconstructor::PushNewExtractors(int n_new_extractors) {
     StopWatch stop_watch;
     for (int i = 0; i < n_new_extractors; i++) {
         extractors_.push_back(std::make_unique<CurveExtractor>(streamer_.get(), &ptree_));
         streamer_->SwitchToNextFrame();
     }
-    LOG(INFO) << "Build new extractor time: " << stop_watch.TimeDuration();
+    LOG(INFO) << "Push extractors time: " << stop_watch.TimeDuration();
 }
 
 /*

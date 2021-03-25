@@ -1,5 +1,7 @@
 # guglielmo: non sincronizzare dati di prova
 examples/
+*build*/
+Display
 
 # Prerequisites
 *.d

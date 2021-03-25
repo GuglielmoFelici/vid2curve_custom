@@ -33,11 +33,11 @@ CurveExtractor::CurveExtractor(StreamerBase *streamer, PropertyTree *ptree) {
     if (method == "NAIVE") {
         // Get prob map / intensity map.
         need_delete_prob_map_ = true;
-        bool need_thinning = true;
         cv::Mat img(height_, width_, CV_8UC3);
         std::memcpy(img.data, streamer->CurrentFrame(), height_ * width_ * 3);
-        /* Qui snellisce le immagini segmentate a curve di un pixel di larghezza -guglielmo */
+        bool need_thinning = true;
         if (need_thinning) {
+            /* Qui snellisce le immagini segmentate a curve di un pixel di larghezza -guglielmo */
             CHECK_EQ(streamer->Channels(), 3);
             cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
             cv::threshold(img, img, 200, 255, cv::THRESH_BINARY_INV);
@@ -58,7 +58,7 @@ CurveExtractor::CurveExtractor(StreamerBase *streamer, PropertyTree *ptree) {
                     }
                 }
             }
-        } else {
+        } else { // ? irraggiungibile
             prob_map_ = ConvertImg2ProbMap(img);
             for (int a = 0; a < height_; a++) {
                 for (int b = 0; b < width_; b++) {
@@ -240,7 +240,9 @@ double *CurveExtractor::ConvertImg2ProbMap(const cv::Mat &img) {
     return p_map;
 }
 
-/* Capire cosa fa questo metodo. Potrebbe essere resampling? -guglielmo */
+/* Capire cosa fa questo metodo.
+ * https://en.wikipedia.org/wiki/Principal_component_analysis
+ * -guglielmo */
 void CurveExtractor::RunPca(int trunc_r, double r) {
     candi_points_.clear();
     points_.clear();
