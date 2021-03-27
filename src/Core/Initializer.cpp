@@ -99,19 +99,19 @@ void Initializer::GetInitialModelData(std::vector<std::unique_ptr<ModelData>> *m
                 options.minimizer_progress_to_stdout = false;
                 ceres::Solver::Summary summary;
                 ceres::Solve(options, &problem, &summary);
-                LOG(INFO) << camera_poses[3] << " " << camera_poses[4] << " " << camera_poses[5];
+                VLOG(0) << camera_poses[3] << " " << camera_poses[4] << " " << camera_poses[5];
                 double ave_depth = 0.0;
                 for (double depth : depths) {
                     ave_depth += depth;
                 }
-                LOG(INFO) << "ave depth:" << ave_depth / depths.size();
+                VLOG(0) << "ave depth:" << ave_depth / depths.size();
 
                 Eigen::Matrix3d R;
                 Eigen::Vector3d angle_axis(camera_poses[0], camera_poses[1], camera_poses[2]);
                 R = Eigen::AngleAxisd(angle_axis.norm(), angle_axis / angle_axis.norm());
                 Eigen::Vector3d T(camera_poses[3], camera_poses[4], camera_poses[5]);
                 double trans_len = T.norm() / (ave_depth / depths.size());
-                LOG(INFO) << "trans len: " << trans_len;
+                VLOG(0) << "trans len: " << trans_len;
                 bool is_redundant = false;
                 const double kMinDifferentTranslationThreshold = 0.01;
                 for (const auto &model_state : *model_states) {

@@ -128,9 +128,9 @@ void Model::FeedExtractor(CurveExtractor *extractor) {
     StopWatch stop_watch;
     global_view_ticker_++;
     auto new_view = new View(extractor, global_view_ticker_, focal_length_);
-    LOG(INFO) << "Build new view time: " << stop_watch.TimeDuration();
+    VLOG(0) << "Build new view time: " << stop_watch.TimeDuration();
     UpdateDataStructure();
-    LOG(INFO) << "Update data structure time: " << stop_watch.TimeDuration();
+    VLOG(0) << "Update data structure time: " << stop_watch.TimeDuration();
     std::vector<std::pair<Eigen::Matrix3d, Eigen::Vector3d>> pose_candidates;
     pose_candidates.emplace_back(last_R_, last_T_);
     CHECK_GT(views_.size(), 0);
@@ -159,12 +159,12 @@ void Model::FeedExtractor(CurveExtractor *extractor) {
         }
     }
     is_tracking_good_ = (track_quality >= 0);
-    LOG(INFO) << "Tracking time: " << stop_watch.TimeDuration();
+    VLOG(0) << "Tracking time: " << stop_watch.TimeDuration();
     last_R_ = new_view->R_;
     last_T_ = new_view->T_;
     view_pools_.emplace_back(new_view);
     views_.emplace_back(new_view);
-    LOG(INFO) << "Feed new extractor time: " << stop_watch.TimeDuration();
+    VLOG(0) << "Feed new extractor time: " << stop_watch.TimeDuration();
 }
 
 void Model::FeedExtractor(CurveExtractor *extractor, const Eigen::Matrix3d &R, const Eigen::Vector3d &T) {
@@ -205,11 +205,11 @@ void Model::Update() {
         StopWatch stop_watch;
         last_variance = variance;
         variance = UpdatePoints(false, (Graph *) curve_network_, (Graph *) spanning_tree_);
-        LOG(INFO) << "---> UpdatePoints time: " << stop_watch.TimeDuration();
+        VLOG(0) << "---> UpdatePoints time: " << stop_watch.TimeDuration();
         UpdateTangs();
-        LOG(INFO) << "---> UpdateTangs time: " << stop_watch.TimeDuration();
+        VLOG(0) << "---> UpdateTangs time: " << stop_watch.TimeDuration();
         UpdateViews();
-        LOG(INFO) << "---> UpdateViews time: " << stop_watch.TimeDuration();
+        VLOG(0) << "---> UpdateViews time: " << stop_watch.TimeDuration();
 
         max_variance = std::max(max_variance, variance);
     }
@@ -220,7 +220,7 @@ void Model::Update() {
     }
     StopWatch stop_watch;
     AdjustPoints((Graph *) curve_network_);
-    LOG(INFO) << "---> AdjustPoints time: " << stop_watch.TimeDuration();
+    VLOG(0) << "---> AdjustPoints time: " << stop_watch.TimeDuration();
 
     // Clear matching cache;
     for (const auto &view : views_) {
@@ -237,7 +237,7 @@ void Model::Update() {
     if (output_procedure_mesh_) {
         OutputProcedureMesh();
     }
-    LOG(INFO) << "---> Duration per update: " << stop_watch_per_update.TimeDuration();
+    VLOG(0) << "---> Duration per update: " << stop_watch_per_update.TimeDuration();
 }
 
 void Model::ShowModelPoints() {
@@ -480,7 +480,7 @@ void Model::AdjustPoints(Graph *graph) {
         }
     }
 
-    LOG(INFO) << "Before removing overlapping duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "Before removing overlapping duration: " << stop_watch.TimeDuration();
     // Remove overlapped short curves.
     graph->GetLinkedPaths(points_, &paths, -0.7, 8);
     if (views_.size() >= 5) {
@@ -551,7 +551,7 @@ void Model::AdjustPoints(Graph *graph) {
     }
 
     graph->GetPaths(&paths);
-    LOG(INFO) << "After removing overlapping duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "After removing overlapping duration: " << stop_watch.TimeDuration();
     // Remove too dense curves ("dense" here means they gather in a point in too many views.)
     bool remove_too_dense_curves = true;
     if (remove_too_dense_curves) {
@@ -634,7 +634,7 @@ void Model::AdjustPoints(Graph *graph) {
             }
         }
     }
-    LOG(INFO) << "After growing points duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "After growing points duration: " << stop_watch.TimeDuration();
 
     bool use_uniform_resample = true;
     if (use_uniform_resample) {
@@ -651,7 +651,7 @@ void Model::AdjustPoints(Graph *graph) {
             }
         }
 
-        LOG(INFO) << "After removing dense points duration: " << stop_watch.TimeDuration();
+        VLOG(0) << "After removing dense points duration: " << stop_watch.TimeDuration();
 
         for (const auto &path : paths) {
             for (int i = 0; i + 1 < path.size(); i++) {
@@ -679,7 +679,7 @@ void Model::AdjustPoints(Graph *graph) {
                 }
             }
         }
-        LOG(INFO) << "After adding new points duration: " << stop_watch.TimeDuration();
+        VLOG(0) << "After adding new points duration: " << stop_watch.TimeDuration();
     } else {
         // Image based resampling.
         for (const auto &path : paths) {
@@ -746,7 +746,7 @@ void Model::AdjustPoints(Graph *graph) {
     n_points_ = points_.size();
     CHECK_EQ(n_points_, points_history_.size());
     UpdateOctree();
-    LOG(INFO) << "After building octree duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "After building octree duration: " << stop_watch.TimeDuration();
     UpdateTangs();
 }
 
@@ -827,7 +827,7 @@ void Model::AddLostPoints() {
     } else {
         LOG(FATAL) << "No such adding lost points method.";
     }
-    LOG(INFO) << "---> UpdateMissingPoints time: " << stop_watch.TimeDuration();
+    VLOG(0) << "---> UpdateMissingPoints time: " << stop_watch.TimeDuration();
 }
 
 void Model::AddLostPointsByDenseVoxel() {
@@ -874,7 +874,7 @@ void Model::AddLostPointsByDenseVoxel() {
         }
     }
     LOG(INFO) << "New points size: " << n_new_points;
-    LOG(INFO) << "Add lost points time duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "Add lost points time duration: " << stop_watch.TimeDuration();
     n_points_ = points_.size();
     UpdateOctree();
 }
@@ -1148,7 +1148,7 @@ double Model::UpdatePointsSplitAndSolve(bool use_linked_paths, Graph *graph, Gra
         const auto &view = views_[view_idx];
         view->CacheMatchings(points_, tangs_, tang_scores_, tree->Edges(), hope_dist_, false);
     }
-    LOG(INFO) << "Core duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "Core duration: " << stop_watch.TimeDuration();
     views_.back()->OutDebugImage("last", points_, global_data_pool_);
     // Get weights;
     std::vector<double> point_weights(n_points_, 1.0);
@@ -1216,7 +1216,7 @@ double Model::UpdatePointsSplitAndSolve(bool use_linked_paths, Graph *graph, Gra
         residuals[i] = res;
     }
 
-    LOG(INFO) << "Solving duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "Solving duration: " << stop_watch.TimeDuration();
     n_points_ = points_.size();
     UpdateOctree();
     std::sort(residuals.begin(), residuals.end());
@@ -1889,7 +1889,7 @@ void Model::RadiusSmoothing(Graph *graph) {
         relative_error = n_valid_points > 1e-3 ? std::sqrt(relative_error / n_valid_points) : 1e9;
 
         double current_smoothing_weight = smoothing_weight;
-        LOG(INFO) << "average relative error: " << relative_error;
+        VLOG(0) << "average relative error: " << relative_error;
         if (relative_error < 0.15) {
             current_smoothing_weight = 1e3;
         }
@@ -2142,8 +2142,8 @@ void Model::UpdateViews() {
             LOG(FATAL) << "No such method to remove views.";
         }
     }
-    LOG(INFO) << "View size: " << views_.size();
-    LOG(INFO) << "Remove views duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "View size: " << views_.size();
+    VLOG(0) << "Remove views duration: " << stop_watch.TimeDuration();
     // Update average radius;
     for (const auto &view : views_) {
         double depth_sum = 0.0;
@@ -2965,7 +2965,7 @@ void Model::RefinePoints() {
     AdjustPoints(curve_network_);
 
     Update3DRadius();
-    LOG(INFO) << "Refine time duration: " << stop_watch.TimeDuration();
+    VLOG(0) << "Refine time duration: " << stop_watch.TimeDuration();
 
     // Output camera poses information.
     std::ofstream out_file("cameras.txt");
@@ -3029,7 +3029,7 @@ void Model::UpdateDataStructure(bool update_3d_radius) {
     curve_network_ = new IronTown(points_,
                                   octree_,
                                   hope_dist_ * topology_searching_radius_, hope_dist_, &points_radius_3d_);
-    LOG(INFO) << "Update data structure time: " << stop_watch.TimeDuration();
+    VLOG(0) << "Update data structure time: " << stop_watch.TimeDuration();
 }
 
 void Model::UpdateOctree() {

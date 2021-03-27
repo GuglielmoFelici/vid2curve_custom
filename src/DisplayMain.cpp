@@ -18,6 +18,13 @@ int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
   FLAGS_minloglevel = 0; // LOG level: 3 -> FATAL
+
+  // verbose log aggiunto da me -guglielmo
+  FLAGS_v = -1;
+  if (nullptr != getenv("verbosity")) {
+      FLAGS_v=atoi(getenv("verbosity"));
+  }
+
   LOG(INFO) << "Hello Wooden!";
 
 #ifdef USE_GUI

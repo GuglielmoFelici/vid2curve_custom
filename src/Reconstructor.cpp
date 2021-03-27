@@ -190,9 +190,12 @@ void Reconstructor::Run() {
             }
         }
 
+        LOG(INFO) << "model_candidate chosen"; // -guglielmo
+
         // Main loop, si lavora sul model_candidate -guglielmo
 
         for (int frame_id = next_frame_id; frame_id < n_views_; frame_id++) {
+            LOG(INFO) << "reading frame no. " << frame_id;
             ++pd;
             PushNewExtractors(frame_id + 1 - extractors_.size());
             model_candidate->FeedExtractor(extractors_[frame_id].get());
@@ -222,14 +225,14 @@ void Reconstructor::Initialize() {
     LOG(INFO) << "Initialize: End";
 }
 
-/** Un extractor dovrebbe mantenere informazioni circa un frame segmentato */
+/** Un extractor mantiene informazioni circa un frame e la sua segmentation map */
 void Reconstructor::PushNewExtractors(int n_new_extractors) {
     StopWatch stop_watch;
     for (int i = 0; i < n_new_extractors; i++) {
         extractors_.push_back(std::make_unique<CurveExtractor>(streamer_.get(), &ptree_));
         streamer_->SwitchToNextFrame();
     }
-    LOG(INFO) << "Push extractors time: " << stop_watch.TimeDuration();
+    VLOG(0) << "Push extractors time: " << stop_watch.TimeDuration();
 }
 
 /*

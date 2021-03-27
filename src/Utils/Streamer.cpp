@@ -27,7 +27,7 @@ int ImageStreamer::SwitchToNextFrame() {
         idx_direction_ = 1;
     }
     current_img_idx_ += idx_direction_;
-    LOG(INFO) << img_path_ + std::to_string(current_img_idx_) + ".png";
+    LOG(INFO) << "Reading " + img_path_ + std::to_string(current_img_idx_) + ".png";
     img_ = cv::imread(img_path_ + std::to_string(current_img_idx_) + ".png");
     if (current_img_idx_ > 0) {
         CHECK_EQ(img_.rows, height_);
