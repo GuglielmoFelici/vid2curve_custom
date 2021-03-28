@@ -195,7 +195,7 @@ void Reconstructor::Run() {
         // Main loop, si lavora sul model_candidate -guglielmo
 
         for (int frame_id = next_frame_id; frame_id < n_views_; frame_id++) {
-            LOG(INFO) << "reading frame no. " << frame_id;
+            LOG(INFO) << "reading frame no. " << frame_id; // -guglielmo
             ++pd;
             PushNewExtractors(frame_id + 1 - extractors_.size());
             model_candidate->FeedExtractor(extractors_[frame_id].get());

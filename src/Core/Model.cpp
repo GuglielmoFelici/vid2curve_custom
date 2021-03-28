@@ -200,8 +200,9 @@ void Model::Update() {
     double max_variance = 0.0;
 
     for (global_iter_num_ = 0;
-         variance > hope_dist_ * 0.25 && variance > max_variance * 0.5 &&
-         global_iter_num_ < max_iter_num; global_iter_num_++) {
+         variance > hope_dist_ * 0.25 && variance > max_variance * 0.5 && global_iter_num_ < max_iter_num;
+         global_iter_num_++) {
+
         StopWatch stop_watch;
         last_variance = variance;
         variance = UpdatePoints(false, (Graph *) curve_network_, (Graph *) spanning_tree_);
@@ -242,47 +243,46 @@ void Model::Update() {
 
 void Model::ShowModelPoints() {
 #ifdef USE_GUI
-                                                                                                                            if (global_data_pool_ == nullptr) {
-    return;
-  }
-  // Output points for visualization & debugging.
-  bool save_to_file = false;
-  if (save_to_file) {
-    Utils::SavePointsAsPly("points.ply", points_);
-  }
-  else {
-    global_data_pool_->UpdateModelPoints((void*) this, points_);
-  }
+    if (global_data_pool_ == nullptr) {
+        return;
+    }
+    // Output points for visualization & debugging.
+    bool save_to_file = false;
+    if (save_to_file) {
+        Utils::SavePointsAsPly("points.ply", points_);
+    } else {
+        global_data_pool_->UpdateModelPoints((void *) this, points_);
+    }
 
-  ShowCameras();
+    ShowCameras();
 #endif
 }
 
 void Model::ShowCameras() {
 #ifdef USE_GUI
-                                                                                                                            if (global_data_pool_ == nullptr) {
-    return;
-  }
-  std::vector<Eigen::Matrix3d> K_invs;
-  std::vector<Eigen::Matrix4d> Wfs;
-  std::vector<std::pair<int, int>> width_and_heights;
-  for (const auto& view : views_) {
-    Eigen::Matrix3d K = Eigen::Matrix3d::Zero();
-    K(0, 0) = K(1, 1) = view->focal_length_;
-    K(0, 2) = view->extractor_->width_ * 0.5;
-    K(1, 2) = view->extractor_->height_ * 0.5;
-    K(2, 2) = 1.0;
+    if (global_data_pool_ == nullptr) {
+        return;
+    }
+    std::vector<Eigen::Matrix3d> K_invs;
+    std::vector<Eigen::Matrix4d> Wfs;
+    std::vector<std::pair<int, int>> width_and_heights;
+    for (const auto &view : views_) {
+        Eigen::Matrix3d K = Eigen::Matrix3d::Zero();
+        K(0, 0) = K(1, 1) = view->focal_length_;
+        K(0, 2) = view->extractor_->width_ * 0.5;
+        K(1, 2) = view->extractor_->height_ * 0.5;
+        K(2, 2) = 1.0;
 
-    Eigen::Matrix4d Wf = Eigen::Matrix4d::Zero();
-    Wf.block(0, 0, 3, 3) = view->R_;
-    Wf.block(0, 3, 3, 1) = view->T_;
-    Wf(3, 3) = 1.0;
+        Eigen::Matrix4d Wf = Eigen::Matrix4d::Zero();
+        Wf.block(0, 0, 3, 3) = view->R_;
+        Wf.block(0, 3, 3, 1) = view->T_;
+        Wf(3, 3) = 1.0;
 
-    K_invs.emplace_back(K.inverse());
-    Wfs.emplace_back(Wf.inverse());
-    width_and_heights.emplace_back(view->extractor_->width_, view->extractor_->height_);
-  }
-  global_data_pool_->UpdateCameras((void*) this, K_invs, Wfs, width_and_heights);
+        K_invs.emplace_back(K.inverse());
+        Wfs.emplace_back(Wf.inverse());
+        width_and_heights.emplace_back(view->extractor_->width_, view->extractor_->height_);
+    }
+    global_data_pool_->UpdateCameras((void *) this, K_invs, Wfs, width_and_heights);
 #endif
 }
 
@@ -400,7 +400,7 @@ void Model::DeleteOutliers() {
     UpdateTangs();
 }
 
-/** Monster code -guglielmo */
+/** Monster code. Genera tantissimi punti addizionali che rendono UpdateDataStructure() esponenziale. -guglielmo */
 void Model::AdjustPoints(Graph *graph) {
     CHECK(graph != nullptr);
     CHECK_EQ(points_.size(), points_history_.size());
@@ -408,7 +408,7 @@ void Model::AdjustPoints(Graph *graph) {
     std::vector<std::vector<int>> paths;
     graph->GetPaths(&paths);
     std::vector<bool> need_del(n_points_, false);
-    bool remove_small_components = false;
+    /*bool remove_small_components = false;
     if (remove_small_components) {
         for (const auto &path : paths) {
             if (path.size() <= 4 && graph->Degree(path.front()) > 1 && graph->Degree(path.back()) > 1) {
@@ -478,7 +478,7 @@ void Model::AdjustPoints(Graph *graph) {
                 }
             }
         }
-    }
+    }*/
 
     VLOG(0) << "Before removing overlapping duration: " << stop_watch.TimeDuration();
     // Remove overlapped short curves.
@@ -1148,7 +1148,7 @@ double Model::UpdatePointsSplitAndSolve(bool use_linked_paths, Graph *graph, Gra
         const auto &view = views_[view_idx];
         view->CacheMatchings(points_, tangs_, tang_scores_, tree->Edges(), hope_dist_, false);
     }
-    VLOG(0) << "Core duration: " << stop_watch.TimeDuration();
+    // VLOG(0) << "Core duration: " << stop_watch.TimeDuration();
     views_.back()->OutDebugImage("last", points_, global_data_pool_);
     // Get weights;
     std::vector<double> point_weights(n_points_, 1.0);
@@ -3014,22 +3014,25 @@ void Model::UpdateSpanningTree() {
     spanning_tree_ = new SpanningTree(points_, octree_, hope_dist_ * 2.0, hope_dist_, 4);
 }
 
-/** Aggiorna spanning_tree_ e points_radius_3d_ */
+/** Aggiorna curve_network_, spanning_tree_ e points_radius_3d_ */
 void Model::UpdateDataStructure(bool update_3d_radius) {
     StopWatch stop_watch;
     // First, update spanning tree for matching algorothm.
     UpdateSpanningTree();
+    VLOG(0) << "Update spanning tree time: " << stop_watch.TimeDuration();
     // Update 3d radius.
     if (update_3d_radius) {
         Update3DRadius();
     }
-    // LOG(INFO) << "Update 3d radius time: " << stop_watch.TimeDuration();
+     VLOG(0) << "Update 3d radius time: " << stop_watch.TimeDuration();
     // Update graph.
     delete curve_network_;
     curve_network_ = new IronTown(points_,
                                   octree_,
-                                  hope_dist_ * topology_searching_radius_, hope_dist_, &points_radius_3d_);
-    VLOG(0) << "Update data structure time: " << stop_watch.TimeDuration();
+                                  hope_dist_ * topology_searching_radius_,
+                                  hope_dist_,
+                                  &points_radius_3d_);
+//    VLOG(0) << "Update data structure time: " << stop_watch.TimeDuration();
 }
 
 void Model::UpdateOctree() {

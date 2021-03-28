@@ -348,6 +348,7 @@ void SpanningTree::GetPaths(std::vector<std::vector<int>> *paths) {
 
 // -------------------------------------- IronTown --------------------------------------------------------
 
+/** Algoritmo per generare la curve network di cui a pagina 0:5, sezione 4.2.1 */
 IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
                    OctreeNew *octree,
                    double r,
@@ -370,6 +371,8 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
         return fa[a] == a ? a : (fa[a] = FindRoot(fa[a]));
     };
     StopWatch stop_watch;
+    // "Given a set of 3D points P we first form a set of candidate edges E′ by pairing points with a mutual distance
+    // below a preset threshold θ"       -guglielmo
     for (int u = 0; u < n_points_; u++) {
         const auto &p = (*points_)[u];
         std::vector<int> neighbors;
@@ -398,16 +401,20 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
     }
     // LOG(INFO) << "Gen initial edges duration: " << stop_watch.TimeDuration();
 
+    // Archi ordinati in base a weight -guglielmo
     std::sort(initial_edges.begin(), initial_edges.end());
     // LOG(INFO) << "Sort duration: " << stop_watch.TimeDuration();
 
+    // "Check, in ascending order of the edge length, if the edges of E′ shall be added to E. An edge(Pi,Pj) ∈ E′is added
+    // to E if it does not form a loop in the graph G or the length of the loop formed by the edge is greater than a
+    // threshold L" -guglielmo
     std::vector<double> out_length_sum(n_points_, 0.0);
     std::vector<int> vis(n_points_, 0);
     int timestamp = 0;
     for (const auto &initial_edge : initial_edges) {
+        double weight = -std::get<0>(initial_edge);
         int a = std::get<1>(initial_edge);
         int b = std::get<2>(initial_edge);
-        double weight = -std::get<0>(initial_edge);
         if (FindRoot(a) != FindRoot(b)) {
             fa[fa[a]] = fa[b];
             edges_[a].emplace_back(b, weight);
