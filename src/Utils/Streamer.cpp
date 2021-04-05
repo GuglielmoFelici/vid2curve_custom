@@ -36,7 +36,7 @@ int ImageStreamer::SwitchToNextFrame() {
     } else {
         height_ = img_.rows;
         width_ = img_.cols;
-        channels_ = img_.channels(); // critico per i test -guglielmo
+        channels_ = img_.channels(); // critico per i test @guglielmo
     }
     return 0;
 }

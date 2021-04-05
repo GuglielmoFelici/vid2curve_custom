@@ -37,7 +37,7 @@ CurveExtractor::CurveExtractor(StreamerBase *streamer, PropertyTree *ptree) {
         std::memcpy(img.data, streamer->CurrentFrame(), height_ * width_ * 3);
         bool need_thinning = true;
         if (need_thinning) {
-            /* Qui snellisce le immagini segmentate a curve di un pixel di larghezza -guglielmo */
+            /* Qui snellisce le immagini segmentate a curve di un pixel di larghezza @guglielmo */
             CHECK_EQ(streamer->Channels(), 3);
             cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
             cv::threshold(img, img, 200, 255, cv::THRESH_BINARY_INV);
@@ -242,7 +242,7 @@ double *CurveExtractor::ConvertImg2ProbMap(const cv::Mat &img) {
 
 /* Capire cosa fa questo metodo.
  * https://en.wikipedia.org/wiki/Principal_component_analysis
- * -guglielmo */
+ * @guglielmo */
 void CurveExtractor::RunPca(int trunc_r, double r) {
     candi_points_.clear();
     points_.clear();
