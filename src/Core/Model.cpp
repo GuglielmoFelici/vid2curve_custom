@@ -672,7 +672,7 @@ void Model::AdjustPoints(Graph *graph) {
                 }
                 if (is_path_feasible) {
                     int new_history = std::min(points_history_[a], points_history_[b]);
-                    for (int t = 1; t < n_segments; t++) {
+                    for (int t = 1; t < n_segments/1.9; t++) { // TODo rimuovere le modifiche, originale era (t < n_segments) -guglielmo
                         new_points.emplace_back(points_[a] + step_vector * t);
                         new_points_history.emplace_back(new_history);
                     }
@@ -680,7 +680,8 @@ void Model::AdjustPoints(Graph *graph) {
             }
         }
         VLOG(0) << "After adding new points duration: " << stop_watch.TimeDuration();
-    } else {
+    }
+/*    else {
         // Image based resampling.
         for (const auto &path : paths) {
             if (path.size() < 2) {
@@ -729,7 +730,7 @@ void Model::AdjustPoints(Graph *graph) {
                 }
             }
         }
-    }
+    }*/
 
     for (int u = 0; u < n_points_; u++) {
         if (!need_del[u]) {
