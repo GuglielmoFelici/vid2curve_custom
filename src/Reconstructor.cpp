@@ -13,7 +13,7 @@
 
 Reconstructor::Reconstructor(std::string ini_file_name, GlobalDataPool *global_data_pool) {
 
-    // Config parsing -guglielmo
+    // Config parsing @guglielmo
 
     global_data_pool_ = global_data_pool;
     boost::property_tree::ini_parser::read_ini(ini_file_name, ptree_);
@@ -69,8 +69,8 @@ void Reconstructor::Run() {
     // Possible method 1.
     if (reconstruction_method_ == "POSE_CANDIDATES") {
         extractors_.clear();
-        PushNewExtractors(1); // Un extractor contiene varie informazioni circa un frame, compresa la prob_map -guglielmo
-        // Questa è la computazione delle posizioni iniziali della camera e della curva 3D iniziale   -guglielmo
+        PushNewExtractors(1); // Un extractor contiene varie informazioni circa un frame, compresa la prob_map @guglielmo
+        // Questa è la computazione delle posizioni iniziali della camera e della curva 3D iniziale   @guglielmo
         // Greedy.
         std::vector<std::unique_ptr<ModelData>> model_states;
         int initial_frame_id = -1;
@@ -105,21 +105,21 @@ void Reconstructor::Run() {
         const double kEraseRatio = 1.3;
 
         std::set<std::pair<double, Model *>> current_models;
-        // model_states è stato popolato da Initializers, qualche riga in alto -guglielmo
+        // model_states è stato popolato da Initializers, qualche riga in alto @guglielmo
         for (const auto &model_state : model_states) {
             auto current_model = new Model(model_state.get(), ptree_, global_data_pool_);
             current_model->Update();
-            current_models.emplace(-current_model->Score(), current_model); // emplace = place if not present -guglielmo
+            current_models.emplace(-current_model->Score(), current_model); // emplace = place if not present @guglielmo
         }
 
         // Arrivati qui, è stato fatto l'update() dei modelli creati a partire dai candidati in model_states.
-        // I modelli sono stati poi inseriti in current_models associati ai rispettivi Score -guglielmo
+        // I modelli sono stati poi inseriti in current_models associati ai rispettivi Score @guglielmo
 
         Model *model_candidate = nullptr;
         int next_frame_id = initial_frame_id + 1;
 
         for (int i = 0; i < initial_frame_id; i++) {
-            ++pd; // Progress display -guglielmo
+            ++pd; // Progress display @guglielmo
         }
 
         // Qui vengono dati altri frame in pasto ai modelli. Dopodiché i modelli vengono inseriti in new_models, a patto che non siano già presenti
@@ -190,21 +190,21 @@ void Reconstructor::Run() {
             }
         }
 
-        LOG(INFO) << "model_candidate chosen"; // -guglielmo
+        LOG(INFO) << "model_candidate chosen"; // @guglielmo
 
-        // Main loop, si lavora sul model_candidate -guglielmo
+        // Main loop, si lavora sul model_candidate @guglielmo
 
         for (int frame_id = next_frame_id; frame_id < n_views_; frame_id++) {
-            LOG(INFO) << "reading frame no. " << frame_id; // -guglielmo
+            LOG(INFO) << "reading frame no. " << frame_id; // @guglielmo
             ++pd;
             PushNewExtractors(frame_id + 1 - extractors_.size());
             model_candidate->FeedExtractor(extractors_[frame_id].get());
-            model_candidate->Update(); // metodo principale -guglielmo
+            model_candidate->Update(); // metodo principale @guglielmo
         }
         model_candidate->FinalProcess();
         Utils::SavePointsAsPly("points.ply", model_candidate->points_);
         if (reconstruction_method_ == "PRESSURE_TEST") {
-            // PressureTest(model_candidate); -guglielmo
+            // PressureTest(model_candidate); @guglielmo
         }
         delete model_candidate;
         state_ = State::EXIT_OK;
@@ -213,7 +213,7 @@ void Reconstructor::Run() {
     }
 }
 
-/** Inizializza lo Streamer, il quale si occupa di fornire i frame dell'immagine -guglielmo */
+/** Inizializza lo Streamer, il quale si occupa di fornire i frame dell'immagine @guglielmo */
 void Reconstructor::Initialize() {
     LOG(INFO) << "Initialize: Begin";
     std::string streamer_type = ptree_.get<std::string>("Streamer.StreamerType");
@@ -314,4 +314,4 @@ void Reconstructor::PressureTest(Model *final_model) {
     for (int st : tracking_steps[0]) {
         std::cout << st << std::endl;
     }
-}  -guglielmo */
+}  @guglielmo */

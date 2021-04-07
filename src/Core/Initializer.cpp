@@ -6,7 +6,7 @@
 
 #include "../Utils/Utils.h"
 
-/* Questo oggetto esiste solo per stimare la camera e i punti iniziali. -guglielmo*/
+/* Questo oggetto esiste solo per stimare la camera e i punti iniziali. @guglielmo*/
 
 
 Initializer::Initializer(
@@ -34,7 +34,7 @@ void Initializer::GetInitialModelData(std::vector<std::unique_ptr<ModelData>> *m
     auto curve_matcher = std::make_unique<CurveMatcher>(extractor_0, extractor_1);
     std::vector<ImageLocalMatching> matchings;
     curve_matcher->FindMatchings("DP", &matchings);
-    CHECK(!matchings.empty()) << "Il matching è fallito. -guglielmo ";
+    CHECK(!matchings.empty()) << "Il matching è fallito. @guglielmo ";
 
     const double kTranslationBias = 0.01;
     double camera_poses[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -46,10 +46,10 @@ void Initializer::GetInitialModelData(std::vector<std::unique_ptr<ModelData>> *m
     double average_trans = 0.0;
     for (int x = -1; x <= 1; x++) {
         for (int y = -1; y <= 1; y++) {
-            for (int z = 0; z <= 0; z++) { // ?? -guglielmo
+            for (int z = 0; z <= 0; z++) { // ?? @guglielmo
                 // Initialization.
                 for (int i = 0; i < extractor_0->n_points_; i++) {
-                    depths[i] = kInitialDepth; // Ridondante? riga 42 -guglielmo
+                    depths[i] = kInitialDepth; // Ridondante? riga 42 @guglielmo
                 }
                 // std::fill(depths.begin(), depths.end(), kInitialDepth * RandLR(0.9, 1.1));
                 camera_poses[3] = x * kTranslationBias;

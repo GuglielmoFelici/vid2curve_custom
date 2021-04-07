@@ -372,7 +372,7 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
     };
     StopWatch stop_watch;
     // "Given a set of 3D points P we first form a set of candidate edges E′ by pairing points with a mutual distance
-    // below a preset threshold θ"       -guglielmo
+    // below a preset threshold θ (default 5 * hope_dist_)"       @guglielmo
     for (int u = 0; u < n_points_; u++) {
         const auto &p = (*points_)[u];
         std::vector<int> neighbors;
@@ -382,10 +382,12 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
             continue;
         }
         for (int v : neighbors) {
+            // perché l'indice dei nodi è rilevante? Forse per evitare "archi back"? @guglielmo
             if (v <= u) {
                 continue;
             }
             const auto &q = (*points_)[v];
+            // vettore distanza @guglielmo
             Eigen::Vector3d bias = q - p;
             double v_searching_r = points_radius == nullptr ? r : std::max(r, points_radius->at(v) * 2.0);
             if (bias.norm() > v_searching_r || bias.norm() > current_searching_r) {
@@ -401,28 +403,42 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
     }
     // LOG(INFO) << "Gen initial edges duration: " << stop_watch.TimeDuration();
 
-    // Archi ordinati in base a weight -guglielmo
+    // Archi ordinati in base a -weight @guglielmo
     std::sort(initial_edges.begin(), initial_edges.end());
     // LOG(INFO) << "Sort duration: " << stop_watch.TimeDuration();
 
-    // "Check, in ascending order of the edge length, if the edges of E′ shall be added to E. An edge(Pi,Pj) ∈ E′is added
-    // to E if it does not form a loop in the graph G or the length of the loop formed by the edge is greater than a
-    // threshold L" -guglielmo
+    /* "Check, in ascending order of the edge length, if the edges of E′ shall be added to E. An edge(Pi,Pj) ∈ E′is added
+        to E if it does not form a loop in the graph G or the length of the loop formed by the edge is greater than a
+        threshold L" @guglielmo */
+
+    // Somma della lunghezza degli archi in uscita per ogni nodo
     std::vector<double> out_length_sum(n_points_, 0.0);
+    // Probabilmente tempo di visita @guglielmo
     std::vector<int> vis(n_points_, 0);
     int timestamp = 0;
     for (const auto &initial_edge : initial_edges) {
         double weight = -std::get<0>(initial_edge);
         int a = std::get<1>(initial_edge);
         int b = std::get<2>(initial_edge);
+        /* funzione riscritta più chiaramente @guglielmo
+         int FindRoot(int a) {
+            if (fa[a] == a) {
+                return a;
+            } else {
+                fa[a] = FindRoot(fa[a]);
+                return fa[a];
+            }
+        }*/
         if (FindRoot(a) != FindRoot(b)) {
+            // non forma un ciclo @guglielmo
             fa[fa[a]] = fa[b];
             edges_[a].emplace_back(b, weight);
             edges_[b].emplace_back(a, weight);
-            Eigen::Vector3d a_to_b = (*points_)[b] - (*points_)[a];
+            Eigen::Vector3d a_to_b = (*points_)[b] - (*points_)[a]; // inutile @guglielmo
             a_to_b /= a_to_b.norm();
             continue;
         }
+        // forma un ciclo, controllo che la lunghezza sia minore del treshold? @guglielmo
         CHECK(!edges_[a].empty() && !edges_[b].empty());
         Eigen::Vector3d a_to_b = (*points_)[b] - (*points_)[a];
         std::vector<std::pair<int, int>> que;
@@ -490,13 +506,6 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
                         }
                     }
                 }
-                // LOG(INFO) << local_array[0] << " "
-                //           << local_array[1] << " "
-                //           << local_array[2] << " "
-                //           << local_array[3] << " "
-                //           << local_array[4] << " "
-                //           << local_array[5] << " "
-                //           << local_array[6] << " ";
                 CHECK_GE(local_array.front(), 0);
                 CHECK_GE(local_array.back(), 0);
                 Eigen::Vector3d vec_a = (points[base_u] - points[local_array.front()]).normalized();

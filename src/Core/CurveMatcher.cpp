@@ -134,7 +134,7 @@ void CurveMatcher::FindMatchingsByOpticalFlow(std::vector<ImageLocalMatching> *m
     *matchings = std::move(rough_matchings);
 }
 
-// todo annotare -guglielmo
+// todo annotare @guglielmo
 void CurveMatcher::FindMatchingsByDP(std::vector<ImageLocalMatching> *matchings) {
     int height = extractor_0_->height_;
     int width = extractor_0_->width_;

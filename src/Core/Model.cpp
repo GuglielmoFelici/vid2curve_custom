@@ -400,7 +400,7 @@ void Model::DeleteOutliers() {
     UpdateTangs();
 }
 
-/** Monster code. Genera tantissimi punti addizionali che rendono UpdateDataStructure() esponenziale. -guglielmo */
+/** Monster code. Genera tantissimi punti addizionali che rendono UpdateDataStructure() esponenziale. @guglielmo */
 void Model::AdjustPoints(Graph *graph) {
     CHECK(graph != nullptr);
     CHECK_EQ(points_.size(), points_history_.size());
