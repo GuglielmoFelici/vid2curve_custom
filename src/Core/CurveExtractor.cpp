@@ -14,6 +14,8 @@
 #include <numeric>
 #include <random>
 
+int CurveExtractor::id = 0; // utilizzato per dare un nome all'output di debug delle immagini segmentate @guglielmo
+
 // Deprecated.
 CurveExtractor::CurveExtractor(double *prob_map, int height, int width) : prob_map_(prob_map) {
     need_delete_prob_map_ = false;
@@ -23,6 +25,7 @@ CurveExtractor::CurveExtractor(double *prob_map, int height, int width) : prob_m
 }
 
 CurveExtractor::CurveExtractor(StreamerBase *streamer, PropertyTree *ptree) {
+    id_ = CurveExtractor::id++; // vedi sopra @guglielmo
     ptree_ = ptree;
     std::string method = ptree->get<std::string>("CurveExtractor.ExtractionMethod");
     use_gpu_ = ptree->get<bool>("CurveExtractor.UseGPU");
@@ -30,7 +33,7 @@ CurveExtractor::CurveExtractor(StreamerBase *streamer, PropertyTree *ptree) {
     height_ = streamer->Height();
     width_ = streamer->Width();
     seg_map_.resize(height_ * width_, 0);
-    if (method == "NAIVE") {
+    if (method == "NAIVE") { // Default @guglielmo
         // Get prob map / intensity map.
         need_delete_prob_map_ = true;
         cv::Mat img(height_, width_, CV_8UC3);
@@ -47,6 +50,7 @@ CurveExtractor::CurveExtractor(StreamerBase *streamer, PropertyTree *ptree) {
                 }
             }
             thinning(img, img);
+            // cv::imwrite(std::to_string(id_) + ".png", img); // Output delle immagini segmentate per debug @guglielmo SWITCH
             int c = img.channels();
             prob_map_ = new double[height_ * width_];
             for (int a = 0; a < height_; a++) {

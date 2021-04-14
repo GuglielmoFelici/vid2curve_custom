@@ -112,6 +112,8 @@ void Reconstructor::Run() {
             current_models.emplace(-current_model->Score(), current_model); // emplace = place if not present @guglielmo
         }
 
+        getchar();
+
         // Arrivati qui, è stato fatto l'update() dei modelli creati a partire dai candidati in model_states.
         // I modelli sono stati poi inseriti in current_models associati ai rispettivi Score @guglielmo
 
@@ -186,13 +188,20 @@ void Reconstructor::Run() {
             for (const auto &pr : current_models) {
                 if (pr.second != model_candidate) {
                     delete pr.second;
+                    global_data_pool_->DeleteModel(pr.second); // @guglielmo
+
                 }
             }
         }
 
         LOG(INFO) << "model_candidate chosen"; // @guglielmo
 
+        model_candidate->OutputFinalModel(model_candidate->curve_network_, "DEBUG_model_candidate");
+
+        getchar(); // metti in pausa per mostrare il candidato iniziale @guglielmo SWITCH
+
         // Main loop, si lavora sul model_candidate @guglielmo
+
 
         for (int frame_id = next_frame_id; frame_id < n_views_; frame_id++) {
             LOG(INFO) << "reading frame no. " << frame_id; // @guglielmo

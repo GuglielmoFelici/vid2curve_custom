@@ -168,7 +168,7 @@ void Utils::OutputCurvesAsOBJ(const std::string& save_path,
   std::ofstream my_file;
   my_file.open(save_path);
   for (const auto& pt : points) {
-    my_file << "v " << pt(0) << " " << pt(1) << " " << pt(2) << "\n";
+    my_file << "v " << pt(0) << " " << pt(1) << " " << pt(2) << " 255.0 0.0 0.0" << "\n"; // aggiunta colorazione dei vertici per debug @guglielmo
   }
   for (const auto& pr : edges) {
     my_file << "l " << pr.first + 1 << " " << pr.second + 1 << "\n";

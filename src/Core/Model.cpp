@@ -2828,6 +2828,7 @@ void Model::PathsSmoothing() {
     UpdateOctree();
 }
 
+/** Effettua l'output di curves.obj e curves_mesh.obj @guglielmo */
 void Model::OutputFinalModel(Graph *graph, const std::string &out_file_name) {
     const auto &edges = graph->Edges();
     // Output Curves: Test.
@@ -2868,7 +2869,7 @@ void Model::OutputFinalModel(Graph *graph, const std::string &out_file_name) {
         Utils::OutputCurvesAsOBJ(out_file_name + ".obj", points_, out_edges);
     }
         /*nenglun*/
-    else if (out_curve_format_ == "SWEEP") {
+    else if (out_curve_format_ == "SWEEP") { // default @guglielmo
         std::vector<std::pair<int, int>> out_edges;
         for (int u = 0; u < n_points_; u++) {
             for (const auto &pr : edges[u]) {

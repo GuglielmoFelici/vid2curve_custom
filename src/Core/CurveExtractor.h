@@ -85,6 +85,7 @@ public:
   std::vector<double> thick_ratio_;
   int height_, width_;
   int n_points_;
+  static int id;
   int id_ = -1;
   PropertyTree* ptree_;
 
