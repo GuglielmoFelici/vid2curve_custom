@@ -174,9 +174,9 @@ void Reconstructor::Run() {
                 break;
             }
             current_models = new_models;
-            LOG(INFO) << "threshold: " << score_threshold;
+            VLOG(0) << "threshold: " << score_threshold;
             for (const auto &pr : current_models) {
-                LOG(INFO) << "!!!!!!!!!!!!!!!!!!!!!!!!!! " << pr.first;
+                VLOG(0) << "!!!!!!!!!!!!!!!!!!!!!!!!!! " << pr.first;
             }
         }
 

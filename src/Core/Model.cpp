@@ -400,7 +400,7 @@ void Model::DeleteOutliers() {
     UpdateTangs();
 }
 
-/** Monster code. Genera tantissimi punti addizionali che rendono UpdateDataStructure() esponenziale. @guglielmo */
+/** Genera tantissimi punti addizionali che rendono UpdateDataStructure() esponenziale. @guglielmo */
 void Model::AdjustPoints(Graph *graph) {
     CHECK(graph != nullptr);
     CHECK_EQ(points_.size(), points_history_.size());
@@ -817,7 +817,7 @@ bool Model::IsSinglePointVisible(const Eigen::Vector3d &point) {
 void Model::AddLostPoints() {
     StopWatch stop_watch;
 
-    if (add_lost_points_method_ == "SEARCH") {
+    if (add_lost_points_method_ == "SEARCH") { // in config usato questo @guglielmo
         AddLostPointsBySearch();
     } else if (add_lost_points_method_ == "DENSE_VOXEL") {
         LOG(FATAL) << "Deprecated.";
@@ -1127,7 +1127,7 @@ double Model::FindBestDepthByWorldRay(const Eigen::Vector3d &o,
 double Model::UpdatePoints(bool use_linked_paths, Graph *graph, Graph *tree) {
     if (update_points_method_ == "GLOBAL") {
         return UpdatePointsGlobal();
-    } else if (update_points_method_ == "SPLIT_AND_SOLVE") {
+    } else if (update_points_method_ == "SPLIT_AND_SOLVE") { // default @guglielmo
         return UpdatePointsSplitAndSolve(use_linked_paths, graph, tree);
     } else {
         LOG(FATAL) << "No such method.";

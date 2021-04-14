@@ -3,6 +3,8 @@ project(ARAP CXX C)
 
 set(CMAKE_CXX_STANDARD 14)
 #set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_CXX_FLAGS_DEBUG "-g -Og")
+#SET(CMAKE_C_FLAGS_DEBUG "-g -Og")
 
 # ceres-solver
 find_package(Ceres REQUIRED)

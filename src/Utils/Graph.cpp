@@ -382,7 +382,7 @@ IronTown::IronTown(const std::vector<Eigen::Vector3d> &points,
             continue;
         }
         for (int v : neighbors) {
-            // perché l'indice dei nodi è rilevante? Forse per evitare "archi back"? @guglielmo
+            // perché l'indice dei nodi è rilevante? Forse per esplorare gli archi in una sola direzione @guglielmo
             if (v <= u) {
                 continue;
             }
