@@ -51,12 +51,26 @@ def cleanup_graph(graph: nx.Graph, relabel_nodes=False):
                 u, v = adjacencents
                 graph.remove_node(node)
                 graph.add_edge(u, v)
+    a = list(graph.edges)
+    a.sort()
+    for edge in a:
+        u, v = list(edge)
+        print(graph.nodes(data=True)[u]['vector'],
+              graph.nodes(data=True)[v]['vector'])
     if relabel_nodes:
-        nx.relabel_nodes(
+        newGraph = nx.relabel_nodes(
             graph,
-            {node: idx+1 for idx, node in enumerate(graph.nodes)},
-            copy=False
+            {node: idx+1 for idx, node in enumerate(graph.nodes)}
         )
+    graph = newGraph
+    print("\n")
+    a = list(graph.edges)
+    a.sort()
+    for edge in a:
+        u, v = list(edge)
+        print(graph.nodes(data=True)[u]['vector'],
+              graph.nodes(data=True)[v]['vector'])
+    return newGraph
 
 
 def graph_to_obj(graph: nx.Graph, objFileName: str):
@@ -64,9 +78,8 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
     lines = []
     for nodeView in graph.nodes(data='vector'):
         vertices.append(f'v {" ".join(nodeView[1])}\n')  # TODO add color?
-    print(len(graph.edges)
     for edge in graph.edges:
-        u, v=list(edge)
+        u, v = list(edge)
         lines.append(f'l {u} {v}\n')
     with open(objFileName, 'w') as destFile:
         destFile.writelines(vertices)
@@ -74,7 +87,7 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
 
 
 def plot_graph(graph: nx.Graph, currentVertex=None, explored=[], stack=[]):
-    vertices, vColors, vSizes, lines=[], [], [], []
+    vertices, vColors, vSizes, lines = [], [], [], []
     for node in graph.nodes:
         vertices.append(np.array(
             graph.nodes(data=True)[node]['vector']
@@ -82,7 +95,7 @@ def plot_graph(graph: nx.Graph, currentVertex=None, explored=[], stack=[]):
         if node == currentVertex:
             vColors.append(np.array([0, 255, 0, 1]))
             vSizes.append(10)
-        elif explored[node]:
+        elif len(explored) and explored[node]:
             vColors.append(np.array([0, 0, 255, 1]))
             vSizes.append(15)
         elif node in stack:
@@ -91,9 +104,9 @@ def plot_graph(graph: nx.Graph, currentVertex=None, explored=[], stack=[]):
         else:
             vColors.append(np.array([255, 0, 0, 1]))
             vSizes.append(4)
-    lines=[]
+    lines = []
     for edge in graph.edges:
-        u, v=list(edge)
+        u, v = list(edge)
         lines.append(
             np.array(graph.nodes(data=True)[u]['vector']))
         lines.append(
@@ -104,8 +117,8 @@ def plot_graph(graph: nx.Graph, currentVertex=None, explored=[], stack=[]):
     input("")
 
 
-graph=graph_from_obj('curves.obj')
-cleanup_graph(graph, relabel_nodes=True)
+graph = graph_from_obj('curves.obj')
+graph = cleanup_graph(graph, relabel_nodes=True)
 graph_to_obj(graph, 'out.obj')
 
 
