@@ -35,8 +35,22 @@ def cleanup_graph(graph: nx.Graph, relabel_nodes=False):
         Removes every node with 2 adjacents (read "is not a triangle vertex in the mesh").
         If relabel_nodes is True, relabels the nodes with numbers from 1 to n
     '''
-    node = next((n for n in graph.adj if graph.degree(n) == 2), None)
-    __cleanup_graph__(graph, node)
+    visited = [False for i in range(graph.size())]
+    stack = [next((n for n in graph.nodes if graph.degree(n) == 2), None)]
+    if stack[0] == None:
+        return
+    while len(stack):
+        node = stack.pop()
+        adjacencents = list(graph.adj[node].keys())
+        if not visited[node]:
+            visited[node] = True
+            stack += [n for n in adjacencents
+                      if not visited[n] and n not in stack]
+            # plot_graph(graph, currentVertex=node, explored=visited)
+            if graph.degree(node) == 2:
+                u, v = adjacencents
+                graph.remove_node(node)
+                graph.add_edge(u, v)
     if relabel_nodes:
         nx.relabel_nodes(
             graph,
@@ -45,95 +59,54 @@ def cleanup_graph(graph: nx.Graph, relabel_nodes=False):
         )
 
 
-def __cleanup_graph__(graph: nx.Graph, root, visited=[]):
-    visited.append(root)
-    adjacencents = list(graph.adj[root].keys())
-    plot_graph(graph, currentVertex=root, explored=visited)
-    if graph.degree(root) == 2:
-        u, v = adjacencents
-        graph.remove_node(root)
-        graph.add_edge(u, v)
-    input(".")
-    __cleanup_graph__(graph, next(
-        n for n in adjacencents if n not in visited), visited)
-
-    # while node:
-    #     u, v = graph.adj[node].keys()
-    #     plot_graph(graph, currentVertex=node)
-    #     graph.remove_node(node)
-    #     graph.add_edge(u, v)
-    #     input(".")
-    #     node = u
-    # node = next((n for n in graph.adj if graph.degree(n) == 2), None)
-    # plot_graph(graph)
-    # t = Thread(target=plot_graph, args=[graph])
-    # t.start()
-    # plot_graph(graph)
-    # t.join()
-
-
 def graph_to_obj(graph: nx.Graph, objFileName: str):
     vertices = []
     lines = []
     for nodeView in graph.nodes(data='vector'):
         vertices.append(f'v {" ".join(nodeView[1])}\n')  # TODO add color?
+    print(len(graph.edges)
     for edge in graph.edges:
-        u, v = list(edge)
+        u, v=list(edge)
         lines.append(f'l {u} {v}\n')
     with open(objFileName, 'w') as destFile:
         destFile.writelines(vertices)
         destFile.writelines(lines)
 
 
-def plot_graph(graph: nx.Graph, currentVertex=None, explored=[]):
-    vertices = vColors = vSizes = []
+def plot_graph(graph: nx.Graph, currentVertex=None, explored=[], stack=[]):
+    vertices, vColors, vSizes, lines=[], [], [], []
     for node in graph.nodes:
-        vertices.append(np.array([
+        vertices.append(np.array(
             graph.nodes(data=True)[node]['vector']
-        ]))
-        vColors.append(
-            np.array([255, 0, 0, 1]) if node != currentVertex
-            else np.array([0, 255, 0, 1])
-        )
+        ))
         if node == currentVertex:
-            vColors.append(np.array([255, 0, 0, 1]))
-            vSizes.append(4)
-        else:
             vColors.append(np.array([0, 255, 0, 1]))
             vSizes.append(10)
-    vertices = np.array([node[1] for node in graph.nodes(data='vector')])
-    # print([
-    #     np.array([255, 0, 0, 1]) if node != currentVertex
-    #     else np.array([0, 255, 0, 1])
-    #     for node in graph.nodes
-    # ])
-    vColors = np.array(
-        [
-            np.array([255, 0, 0, 1]) if node != currentVertex
-            else np.array([0, 255, 0, 1])
-            for node in graph.nodes
-        ]
-    )
-    vSizes = np.array(
-        [
-            4 if node != currentVertex
-            else 10
-            for node in graph.nodes
-        ]
-    )
-    lines = []
+        elif explored[node]:
+            vColors.append(np.array([0, 0, 255, 1]))
+            vSizes.append(15)
+        elif node in stack:
+            vColors.append(np.array([255, 255, 0, 1]))
+            vSizes.append(10)
+        else:
+            vColors.append(np.array([255, 0, 0, 1]))
+            vSizes.append(4)
+    lines=[]
     for edge in graph.edges:
+        u, v=list(edge)
         lines.append(
-            np.array(graph.nodes(data=True)[list(edge)[0]]['vector']))
+            np.array(graph.nodes(data=True)[u]['vector']))
         lines.append(
-            np.array(graph.nodes(data=True)[list(edge)[1]]['vector']))
+            np.array(graph.nodes(data=True)[v]['vector']))
     lineWidget.setData(pos=np.array(lines), mode='lines')
-    vertexWidget.setData(pos=vertices, color=vColors, size=vSizes)
+    vertexWidget.setData(pos=np.array(vertices),
+                         color=np.array(vColors), size=np.array(vSizes))
+    input("")
 
 
-graph = graph_from_obj('curves.obj')
+graph=graph_from_obj('curves.obj')
 cleanup_graph(graph, relabel_nodes=True)
-# graph_to_obj(graph, 'out.obj')
+graph_to_obj(graph, 'out.obj')
 
 
 # create three grids, add each to the view
@@ -143,6 +116,3 @@ cleanup_graph(graph, relabel_nodes=True)
 # view.addItem(xgrid)
 # view.addItem(ygrid)
 # view.addItem(zgrid)
-
-
-input()
