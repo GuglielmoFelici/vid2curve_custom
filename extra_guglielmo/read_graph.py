@@ -5,6 +5,14 @@ import numpy as np
 import time
 from threading import Thread
 import datetime
+import argparse
+
+parser = argparse.ArgumentParser(
+    description='Reduces vertices in OBJ-represented graph')
+
+parser.add_argument('-p', '--plot', dest='plot',
+                    action='store_true', help='Visualize the algorithm')
+global_options = parser.parse_args()
 
 pg.mkQApp()
 # make a widget for displaying 3D objects
@@ -46,30 +54,17 @@ def cleanup_graph(graph: nx.Graph, relabel_nodes=False):
             visited[node] = True
             stack += [n for n in adjacencents
                       if not visited[n] and n not in stack]
-            # plot_graph(graph, currentVertex=node, explored=visited)
+            if global_options.plot:
+                plot_graph(graph, currentVertex=node, explored=visited)
             if graph.degree(node) == 2:
                 u, v = adjacencents
                 graph.remove_node(node)
                 graph.add_edge(u, v)
-    a = list(graph.edges)
-    a.sort()
-    for edge in a:
-        u, v = list(edge)
-        print(graph.nodes(data=True)[u]['vector'],
-              graph.nodes(data=True)[v]['vector'])
     if relabel_nodes:
         newGraph = nx.relabel_nodes(
             graph,
             {node: idx+1 for idx, node in enumerate(graph.nodes)}
         )
-    graph = newGraph
-    print("\n")
-    a = list(graph.edges)
-    a.sort()
-    for edge in a:
-        u, v = list(edge)
-        print(graph.nodes(data=True)[u]['vector'],
-              graph.nodes(data=True)[v]['vector'])
     return newGraph
 
 
@@ -119,13 +114,5 @@ def plot_graph(graph: nx.Graph, currentVertex=None, explored=[], stack=[]):
 
 graph = graph_from_obj('curves.obj')
 graph = cleanup_graph(graph, relabel_nodes=True)
+
 graph_to_obj(graph, 'out.obj')
-
-
-# create three grids, add each to the view
-# xgrid = gl.GLGridItem()
-# ygrid = gl.GLGridItem()
-# zgrid = gl.GLGridItem()
-# view.addItem(xgrid)
-# view.addItem(ygrid)
-# view.addItem(zgrid)
