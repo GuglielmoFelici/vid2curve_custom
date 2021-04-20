@@ -48,7 +48,7 @@ def relabel_nodes(graph: nx.Graph):
     return newGraph
 
 
-def cleanup_graph(graph: nx.Graph, relabel_nodes=False, visualize=global_options.plot):
+def cleanup_graph(graph: nx.Graph, visualize=global_options.plot):
     '''
         Removes every node with 2 adjacents (read "is not a triangle vertex in the mesh").
         If relabel_nodes is True, relabels the nodes with numbers from 1 to n
@@ -138,29 +138,27 @@ def path_to_edges(path: list):
 
 def plot_paths(graph: nx.Graph, paths: dict):
     for node in paths:
-        print("\nNODE", node)
         for path in paths[node]:
-            print(path)
-            print(list(zip(path[:-1], path[1:])))
-            print("\n")
             plot_graph(graph, colored_vertices=path, current_vertex=node,
                        colored_edges=path_to_edges(path))
 
 
-def path_is_face(graph: nx.Graph, path: list):
-    edges = [sorted(edge) for edge in path_to_edges(path)]
-    for node in path:
-        for adj in list(graph[node]):
-            if adj in path and sorted((node, adj)) not in edges:
-                # print(adj, sorted((node, adj)), edges)
-                return False
-    return True
+# def path_is_face(graph: nx.Graph, path: list):
+#     edges = [sorted(edge) for edge in path_to_edges(path)]
+#     for node in path:
+#         for adj in list(graph[node]):
+#             if adj in path and sorted((node, adj)) not in edges:
+#                 return False
+#     return True
 
 
-def merge_close_vecs(graph: nx.Graph):
+def merge_close_vecs(graph: nx.Graph, visualize=False):
+    visualize = visualize and global_options.plot
     to_merge = []
     for u, u_vec in graph.nodes(data='vector'):
         for v, v_vec in graph.nodes(data='vector'):
+            if u == v:
+                continue
             sqrd_dist = np.sum((np.array(u_vec) - np.array(v_vec))**2)
             dist = np.sqrt(sqrd_dist)
             if (dist < 0.01):
@@ -168,21 +166,20 @@ def merge_close_vecs(graph: nx.Graph):
     for u, v in to_merge:
         if not u in graph.nodes or not v in graph.nodes:
             continue
-        plot_graph(graph, current_vertex=u, colored_vertices=[v])
+        if visualize:
+            plot_graph(graph, current_vertex=u, colored_vertices=[v])
         new_adjacents = list(graph.adj[v])
         graph.remove_node(v)
         for new_adj in new_adjacents:
             if graph.has_node(new_adj) and new_adj != u:
                 graph.add_edge(u, new_adj)
-        plot_graph(graph, current_vertex=u)
-        # new_edges = [(u, v)
-        #              for u, v in list(graph.adj[node]) + list(graph.adj[adj])]
-        # new_edges =
+        if visualize:
+            plot_graph(graph, current_vertex=u, colored_vertices=[v])
 
 
 graph: nx.Graph = graph_from_obj('curves.obj')
-cleanup_graph(graph, relabel_nodes=True, visualize=False)
-graph = relabel_nodes(graph)
+cleanup_graph(graph, visualize=global_options.plot)
+# graph = relabel_nodes(graph)
 merge_close_vecs(graph)
 graph = relabel_nodes(graph)
 # paths = reduce_to_triangles(graph)
