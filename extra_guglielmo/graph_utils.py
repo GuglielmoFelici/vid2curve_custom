@@ -2,7 +2,6 @@ import networkx as nx
 
 
 def _all_simple_paths_graph(G: nx.Graph, source, target):
-    print("node is: ", source)
     current_path = [source]
     # visited = dict.fromkeys(G.nodes, False)
     stack = list(G[source])

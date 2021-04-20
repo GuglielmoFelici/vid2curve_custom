@@ -32,10 +32,20 @@ def graph_from_obj(objFileName: str):
         for idx, line in enumerate(objFile.readlines()):
             line = line.split()
             if line[0] == 'v':
-                graph.add_node(idx+1, vector=line[1:4])
+                graph.add_node(idx+1, vector=[float(coord)
+                               for coord in line[1:4]])
             elif line[0] == 'l':
                 graph.add_edge(int(line[1]), int(line[2]))
     return graph
+
+
+def relabel_nodes(graph: nx.Graph):
+    ''' Rimappa NON IN PLACE le etichette dei nodi con numeri crescenti da 1 a N. Ritorna un nuovo grafo '''
+    newGraph = nx.relabel_nodes(
+        graph,
+        {node: idx+1 for idx, node in enumerate(graph.nodes)}
+    )
+    return newGraph
 
 
 def cleanup_graph(graph: nx.Graph, relabel_nodes=False, visualize=global_options.plot):
@@ -61,19 +71,14 @@ def cleanup_graph(graph: nx.Graph, relabel_nodes=False, visualize=global_options
                 u, v = adjacencents
                 graph.remove_node(node)
                 graph.add_edge(u, v)
-    if relabel_nodes:
-        newGraph = nx.relabel_nodes(
-            graph,
-            {node: idx+1 for idx, node in enumerate(graph.nodes)}
-        )
-    return newGraph
 
 
 def graph_to_obj(graph: nx.Graph, objFileName: str):
     vertices = []
     lines = []
-    for nodeView in graph.nodes(data='vector'):
-        vertices.append(f'v {" ".join(nodeView[1])}\n')  # TODO add color?
+    for node, node_vec in graph.nodes(data='vector'):
+        # TODO add color?
+        vertices.append(f'v {" ".join([str(x) for x in node_vec])}\n')
     for edge in graph.edges:
         u, v = list(edge)
         lines.append(f'l {u} {v}\n')
@@ -84,9 +89,9 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
 
 def plot_graph(graph: nx.Graph, current_vertex=None, colored_vertices=[], colored_edges=[]):
     vertices, vColors, vSizes, lines, lColors = [], [], [], [], []
-    for node in graph.nodes:
+    for node, node_vec in graph.nodes(data='vector'):
         vertices.append(np.array(
-            graph.nodes(data=True)[node]['vector']
+            node_vec
         ))
         if node == current_vertex:
             vColors.append(np.array([0, 255, 0, 1]))
@@ -127,6 +132,10 @@ def reduce_to_triangles(graph: nx.Graph):
     return all_loops
 
 
+def path_to_edges(path: list):
+    return list(zip(path[:-1], path[1:]))
+
+
 def plot_paths(graph: nx.Graph, paths: dict):
     for node in paths:
         print("\nNODE", node)
@@ -135,12 +144,47 @@ def plot_paths(graph: nx.Graph, paths: dict):
             print(list(zip(path[:-1], path[1:])))
             print("\n")
             plot_graph(graph, colored_vertices=path, current_vertex=node,
-                       colored_edges=list(zip(path[:-1], path[1:])))
+                       colored_edges=path_to_edges(path))
 
 
-graph = graph_from_obj('curves.obj')
-graph = cleanup_graph(graph, relabel_nodes=True, visualize=False)
-paths = reduce_to_triangles(graph)
-plot_paths(graph, paths)
-# print(list(zip(paths[:-1], paths[1:])))
-# graph_to_obj(graph, 'out.obj')
+def path_is_face(graph: nx.Graph, path: list):
+    edges = [sorted(edge) for edge in path_to_edges(path)]
+    for node in path:
+        for adj in list(graph[node]):
+            if adj in path and sorted((node, adj)) not in edges:
+                # print(adj, sorted((node, adj)), edges)
+                return False
+    return True
+
+
+def merge_close_vecs(graph: nx.Graph):
+    to_merge = []
+    for u, u_vec in graph.nodes(data='vector'):
+        for v, v_vec in graph.nodes(data='vector'):
+            sqrd_dist = np.sum((np.array(u_vec) - np.array(v_vec))**2)
+            dist = np.sqrt(sqrd_dist)
+            if (dist < 0.01):
+                to_merge.append((u, v))
+    for u, v in to_merge:
+        if not u in graph.nodes or not v in graph.nodes:
+            continue
+        plot_graph(graph, current_vertex=u, colored_vertices=[v])
+        new_adjacents = list(graph.adj[v])
+        graph.remove_node(v)
+        for new_adj in new_adjacents:
+            if graph.has_node(new_adj) and new_adj != u:
+                graph.add_edge(u, new_adj)
+        plot_graph(graph, current_vertex=u)
+        # new_edges = [(u, v)
+        #              for u, v in list(graph.adj[node]) + list(graph.adj[adj])]
+        # new_edges =
+
+
+graph: nx.Graph = graph_from_obj('curves.obj')
+cleanup_graph(graph, relabel_nodes=True, visualize=False)
+graph = relabel_nodes(graph)
+merge_close_vecs(graph)
+graph = relabel_nodes(graph)
+# paths = reduce_to_triangles(graph)
+# plot_paths(graph, paths)
+graph_to_obj(graph, 'out.obj')
