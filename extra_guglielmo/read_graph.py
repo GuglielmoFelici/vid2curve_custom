@@ -9,6 +9,9 @@ import graph_utils
 parser = argparse.ArgumentParser(
     description='Reduces vertices in OBJ-represented graph')
 
+parser.add_argument('input_file')
+parser.add_argument('-o', '--out_file', dest='out_file',
+                    help='store output in OUT_FILE. Default is "out"', default='out')
 parser.add_argument('-p', '--plot', dest='plot',
                     action='store_true', help='Visualize the algorithm')
 global_options = parser.parse_args()
@@ -33,7 +36,7 @@ def graph_from_obj(objFileName: str):
             line = line.split()
             if line[0] == 'v':
                 graph.add_node(idx+1, vector=[float(coord)
-                               for coord in line[1:4]])
+                                              for coord in line[1:4]])
             elif line[0] == 'l':
                 graph.add_edge(int(line[1]), int(line[2]))
     return graph
@@ -65,7 +68,7 @@ def cleanup_graph(graph: nx.Graph, visualize=global_options.plot):
             stack += [n for n in adjacencents
                       if not visited[n] and n not in stack]
             if visualize:
-                plot_graph(graph, current_vertex=node,
+                plot_graph(graph, highlighted_vertex=node,
                            colored_vertices=[vis for vis in visited if visited[vis]])
             if graph.degree(node) == 2:
                 u, v = adjacencents
@@ -78,7 +81,7 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
     lines = []
     for node, node_vec in graph.nodes(data='vector'):
         # TODO add color?
-        vertices.append(f'v {" ".join([str(x) for x in node_vec])}\n')
+        vertices.append(f'v {" ".join([str(coord) for coord in node_vec])}\n')
     for edge in graph.edges:
         u, v = list(edge)
         lines.append(f'l {u} {v}\n')
@@ -87,13 +90,13 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
         destFile.writelines(lines)
 
 
-def plot_graph(graph: nx.Graph, current_vertex=None, colored_vertices=[], colored_edges=[]):
+def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges=[], wait_for_input=True):
     vertices, vColors, vSizes, lines, lColors = [], [], [], [], []
     for node, node_vec in graph.nodes(data='vector'):
         vertices.append(np.array(
             node_vec
         ))
-        if node == current_vertex:
+        if node == highlighted_vertex:
             vColors.append(np.array([0, 255, 0, 1]))
             vSizes.append(10)
         elif node in colored_vertices:
@@ -121,26 +124,33 @@ def plot_graph(graph: nx.Graph, current_vertex=None, colored_vertices=[], colore
                        color=np.array(lColors))
     vertexWidget.setData(pos=np.array(vertices),
                          color=np.array(vColors), size=np.array(vSizes))
-    input("")
+    if wait_for_input:
+        input("")
 
 
-def reduce_to_triangles(graph: nx.Graph):
-    all_loops = {}
-    for node in graph.nodes:
-        all_loops[node] = list(
-            graph_utils.all_simple_edge_paths(graph, node, node))
-    return all_loops
+# def reduce_to_triangles(graph: nx.Graph):
+#     all_loops = {}
+#     for node in graph.nodes:
+#         all_loops[node] = list(
+#             graph_utils.all_simple_edge_paths(graph, node, node))
+#     return all_loops
 
 
-def path_to_edges(path: list):
+def path_to_edges(path: list) -> list:
+    ''' [1,2,3, 4] -> [(1,2), (2,3), (3,4)] '''
     return list(zip(path[:-1], path[1:]))
 
 
-def plot_paths(graph: nx.Graph, paths: dict):
+def plot_cycles(graph: nx.Graph, paths: dict):
     for node in paths:
         for path in paths[node]:
-            plot_graph(graph, colored_vertices=path, current_vertex=node,
+            plot_graph(graph, colored_vertices=path, highlighted_vertex=node,
                        colored_edges=path_to_edges(path))
+
+
+def vert_dist(u: list, v: list):
+    sqrd_dist = np.sum((np.array(u) - np.array(v))**2)
+    return np.sqrt(sqrd_dist)
 
 
 # def path_is_face(graph: nx.Graph, path: list):
@@ -167,21 +177,21 @@ def merge_close_vecs(graph: nx.Graph, visualize=False):
         if not u in graph.nodes or not v in graph.nodes:
             continue
         if visualize:
-            plot_graph(graph, current_vertex=u, colored_vertices=[v])
+            plot_graph(graph, highlighted_vertex=u, colored_vertices=[v])
         new_adjacents = list(graph.adj[v])
         graph.remove_node(v)
         for new_adj in new_adjacents:
             if graph.has_node(new_adj) and new_adj != u:
                 graph.add_edge(u, new_adj)
         if visualize:
-            plot_graph(graph, current_vertex=u, colored_vertices=[v])
+            plot_graph(graph, highlighted_vertex=u, colored_vertices=[v])
 
 
-graph: nx.Graph = graph_from_obj('curves.obj')
+graph: nx.Graph = graph_from_obj(global_options.input_file)
 cleanup_graph(graph, visualize=global_options.plot)
 # graph = relabel_nodes(graph)
 merge_close_vecs(graph)
 graph = relabel_nodes(graph)
 # paths = reduce_to_triangles(graph)
 # plot_paths(graph, paths)
-graph_to_obj(graph, 'out.obj')
+graph_to_obj(graph, (global_options.out_file)+'.obj')

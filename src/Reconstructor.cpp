@@ -193,7 +193,7 @@ void Reconstructor::Run() {
 
         LOG(INFO) << "model_candidate chosen"; // @guglielmo
 
-        model_candidate->OutputFinalModel(model_candidate->curve_network_, "DEBUG_model_candidate");
+        //model_candidate->OutputFinalModel(model_candidate->curve_network_, "DEBUG_model_candidate"); @guglielmo SWITCH
 
         // getchar(); // metti in pausa per mostrare il candidato iniziale @guglielmo SWITCH
 
