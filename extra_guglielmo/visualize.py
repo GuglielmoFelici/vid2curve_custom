@@ -2,7 +2,7 @@ import networkx as nx
 import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import numpy as np
-from graph_utils import get_vertex_pos, path_to_edges
+from graph_utils import vertex_pos, path_to_edges
 from PyQt5 import QtCore
 import os
 import time
@@ -61,15 +61,13 @@ def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], co
     for edge in graph.edges:
         u, v = list(edge)
         lines.append(
-            np.array(get_vertex_pos(graph, u)))
+            np.array(vertex_pos(graph, u)))
         lines.append(
-            np.array(get_vertex_pos(graph, v)))
+            np.array(vertex_pos(graph, v)))
         if sorted(edge) in [sorted(col_edge) for col_edge in colored_edges]:
-            # , np.array([0, 255, 0, 1]))
             lColors.append(np.array([255, 0, 0, 1]))
             lColors.append(np.array([255, 0, 0, 1]))
         else:
-            # ,np.array([255, 255, 255, 1]))
             lColors.append(np.array([255, 255, 255, 1]))
             lColors.append(np.array([255, 255, 255, 1]))
     lineWidget.setData(pos=np.array(lines), mode='lines',

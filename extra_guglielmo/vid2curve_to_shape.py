@@ -13,7 +13,6 @@ parser.add_argument('-o', '--out_file', dest='out_file',
 parser.add_argument("-p", "--plot", dest='plot', type=str, choices=["reduction", "merging", "all"],
                     help="Visualize algorithms")
 args = parser.parse_args()
-
 if args.plot:
     visualize.init_window()
 g = graph.graph_from_obj(args.input_file)
