@@ -1,7 +1,6 @@
 import networkx as nx
 import numpy as np
 import visualize as plot
-# from visualize import plot_graph
 
 
 def graph_from_obj(objFileName: str) -> nx.Graph:
@@ -36,15 +35,14 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
 
 def relabel_nodes(graph: nx.Graph) -> nx.Graph:
     ''' Remaps node tags to numbers in [1, N] to ensure OBJ compatibility. Returns a new graph. '''
-    newGraph = nx.relabel_nodes(
+    return nx.relabel_nodes(
         graph,
         {node: idx+1 for idx, node in enumerate(graph.nodes)}
     )
-    return newGraph
 
 
 def path_to_edges(path: list) -> list:
-    ''' [1,2,3, 4] -> [(1,2), (2,3), (3,4)] '''
+    ''' [1, 2, 3, 4] -> [(1,2), (2,3), (3,4)] '''
     return list(zip(path[:-1], path[1:]))
 
 
@@ -70,9 +68,9 @@ def simplify_edges(graph: nx.Graph, visualize=False):
     stack = [next((n for n in graph.nodes if graph.degree(n) == 2), None)]
     if stack[0] == None:
         return
-    while stack:  # TODO while stack
+    while stack:
         node = stack.pop()
-        adjacencents = list(graph.adj[node].keys())
+        adjacencents = list(graph.adj[node])
         if not visited[node]:
             visited[node] = True
             stack += [n for n in adjacencents
@@ -81,7 +79,7 @@ def simplify_edges(graph: nx.Graph, visualize=False):
                 plot.plot_graph(graph,
                                 highlighted_vertex=node,
                                 colored_vertices=[
-                                    vis for vis in graph.nodes if visited[vis]],
+                                    node for node in graph.nodes if visited[node]],
                                 title='Checking vertices for removal')
             if graph.degree(node) == 2:
                 u, v = adjacencents
@@ -104,7 +102,8 @@ def merge_close_vecs(graph: nx.Graph, visualize=False):
                 colored_vertices=[u, v],
                 frame_duration=1,
                 title='Merging cluster')
-        graph.nodes[u]['vector'] = np.divide(  # Centroid
+        # Centroid
+        graph.nodes[u]['vector'] = np.divide(
             np.sum(
                 [np.array(vertex_pos(graph, u)),
                  np.array(vertex_pos(graph, v))],
