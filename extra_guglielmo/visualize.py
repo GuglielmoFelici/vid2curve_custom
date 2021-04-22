@@ -39,7 +39,6 @@ def responsive_sleep(secs: int):
 
 def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges=[], title='', is_frame=True, frame_duration=0.01):
     ''' Plots the graph. If is_frame is True, pauses the program for frame_duration (to be used in loops).'''
-
     if not view or not lineWidget or not vertexWidget:
         return False
     view.setWindowTitle(title)
@@ -59,12 +58,12 @@ def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], co
             vSizes.append(4)
     lines = []
     for edge in graph.edges:
-        u, v = list(edge)
+        u, v = edge
         lines.append(
             np.array(vertex_pos(graph, u)))
         lines.append(
             np.array(vertex_pos(graph, v)))
-        if sorted(edge) in [sorted(col_edge) for col_edge in colored_edges]:
+        if sorted(edge) in map(sorted, colored_edges):
             lColors.append(np.array([255, 0, 0, 1]))
             lColors.append(np.array([255, 0, 0, 1]))
         else:
