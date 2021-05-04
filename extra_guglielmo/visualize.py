@@ -37,7 +37,7 @@ def responsive_sleep(secs: int):
         pg.mkQApp().processEvents()
 
 
-def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges=[], title='', is_frame=True, frame_duration=0.01):
+def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges: list(tuple) = [], title='', is_frame=True, frame_duration=0.01):
     ''' Plots the graph. If is_frame is True, pauses the program for frame_duration (to be used in loops).'''
     if not view or not lineWidget or not vertexWidget:
         return False

@@ -11,7 +11,7 @@ def parse_arguments():
     parser.add_argument('input_file')
     parser.add_argument('-o', '--out_file', dest='out_file',
                         help='store output in OUT_FILE. Default is "out"', default='out')
-    parser.add_argument("-p", "--plot", dest='plot', type=str, choices=["reduction", "merging", "all"],
+    parser.add_argument("-p", "--plot", dest='plot', type=str, choices=["reduction", "merging", "triangles", "all"],
                         help="Visualize algorithms")
     return parser.parse_args()
 
@@ -25,6 +25,8 @@ def main():
                          visualize=args.plot == 'reduction' or args.plot == 'all')
     graph.merge_close_vecs(g,
                            visualize=args.plot == 'merging' or args.plot == 'all')
+    graph.get_triangles(g,
+                        visualize=args.plot == 'triangles' or args.plot == 'all')
     graph.graph_to_obj(g, (args.out_file)+'.obj')
 
 

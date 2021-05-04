@@ -60,6 +60,26 @@ def mean_edge_len(graph: nx.Graph):
     return sum([vert_dist(graph, *edge) for edge in graph.edges]) / graph.number_of_edges()
 
 
+def get_triangles(graph: nx.Graph, visualize=False):
+    def custom_dfs(graph, node, path, cycles):
+        path.append(node)
+        if visualize:
+            plot.plot_graph(graph, colored_vertices=path, frame_duration=1)
+        if len(path) == 3:
+            if node == path[0]:
+                cycles.append(path)
+                if visualize:
+                    plot.plot_graph(graph, colored_vertices=path, colored_edges=[
+                        sorted(edge) for edge in path_to_edges(path)], frame_duration=1)
+        else:
+            for adj in graph.adj[node]:
+                custom_dfs(graph, adj, path, cycles)
+        path.pop()
+    cycles = []
+    for node in graph:
+        custom_dfs(graph, node, [], cycles)
+
+
 def simplify_edges(graph: nx.Graph, visualize=False):
     '''
         Removes every node with 2 adjacents (read "is not a triangle vertex in the mesh").
