@@ -3,8 +3,6 @@ import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import numpy as np
 from graph_utils import vertex_pos, path_to_edges
-from PyQt5 import QtCore
-import os
 import time
 
 
@@ -14,19 +12,13 @@ view = lineWidget = vertexWidget = None
 def init_window():
     global view, lineWidget, vertexWidget
     pg.mkQApp()
-    # make a widget for displaying 3D objects
+    # make a widget to display 3D objects
     view = gl.GLViewWidget()
     lineWidget = gl.GLLinePlotItem()
     vertexWidget = gl.GLScatterPlotItem()
     view.addItem(lineWidget)
     view.addItem(vertexWidget)
     view.show()
-
-
-def _plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges=[], title='', wait_for_input=True, skip_key='q', clear_console=True) -> bool:
-    QtCore.QTimer.singleShot(20000, lambda: print("heyo"))
-    print("heyo")
-    return True
 
 
 def responsive_sleep(secs: int):
@@ -40,8 +32,10 @@ def responsive_sleep(secs: int):
 def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges: list(tuple) = [], title='', is_frame=True, frame_duration=0.01):
     ''' Plots the graph. If is_frame is True, pauses the program for frame_duration (to be used in loops).'''
     if not view or not lineWidget or not vertexWidget:
+        print("Error: window not initialized properly")
         return False
-    view.setWindowTitle(title)
+    if title:
+        view.setWindowTitle(title)
     vertices, vColors, vSizes, lines, lColors = [], [], [], [], []
     for node, node_vec in graph.nodes(data='vector'):
         vertices.append(np.array(

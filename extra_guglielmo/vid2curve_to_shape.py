@@ -11,6 +11,7 @@ def parse_arguments():
     parser.add_argument('input_file')
     parser.add_argument('-o', '--out_file', dest='out_file',
                         help='store output in OUT_FILE. Default is "out"', default='out')
+
     parser.add_argument("-p", "--plot", dest='plot', type=str, choices=["reduction", "merging", "triangles", "all"],
                         help="Visualize algorithms")
     return parser.parse_args()

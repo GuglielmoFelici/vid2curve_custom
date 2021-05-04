@@ -23,14 +23,12 @@ def graph_to_obj(graph: nx.Graph, objFileName: str):
     lines = []
     graph = relabel_nodes(graph)
     for _, node_vec in graph.nodes(data='vector'):
-        # TODO add color?
         vertices.append(f'v {" ".join([str(coord) for coord in node_vec])}\n')
     for edge in graph.edges:
         u, v = list(edge)
         lines.append(f'l {u} {v}\n')
     with open(objFileName, 'w') as destFile:
-        destFile.writelines(vertices)
-        destFile.writelines(lines)
+        destFile.writelines(vertices + lines)
 
 
 def relabel_nodes(graph: nx.Graph) -> nx.Graph:
@@ -84,9 +82,9 @@ def simplify_edges(graph: nx.Graph, visualize=False):
     '''
         Removes every node with 2 adjacents (read "is not a triangle vertex in the mesh").
     '''
-    visited = [False for i in range(graph.size())]
-    stack = [next((n for n in graph.nodes if graph.degree(n) == 2), None)]
-    if stack[0] == None:
+    visited = [False for _ in range(graph.size())]
+    stack = [next((n for n in graph if graph.degree(n) == 2), None)]
+    if not stack[0]:
         return
     while stack:
         node = stack.pop()
@@ -99,8 +97,8 @@ def simplify_edges(graph: nx.Graph, visualize=False):
                 plot.plot_graph(graph,
                                 highlighted_vertex=node,
                                 colored_vertices=[
-                                    node for node in graph.nodes if visited[node]],
-                                title='Checking vertices for removal')
+                                    node for node in graph if visited[node]],
+                                title='Checking vertex for removal')
             if graph.degree(node) == 2:
                 u, v = adjacencents
                 graph.remove_node(node)
@@ -134,10 +132,10 @@ def merge_close_vecs(graph: nx.Graph, visualize=False):
         graph.add_edges_from([(u, adj) for adj in graph.adj[v]
                               if adj != u])
         graph.remove_node(v)
-        edge = next_small_edge()
         if visualize:
             plot.plot_graph(
                 graph,
                 highlighted_vertex=u,
                 frame_duration=1,
                 title='Cluster merging: vectors merged')
+        edge = next_small_edge()
