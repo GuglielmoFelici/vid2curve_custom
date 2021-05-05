@@ -1,8 +1,7 @@
-import networkx as nx
 import pyqtgraph.opengl as gl
 import pyqtgraph as pg
 import numpy as np
-from graph_utils import vertex_pos, path_to_edges
+import v2c_graph as graph
 import time
 
 
@@ -29,7 +28,14 @@ def responsive_sleep(secs: int):
         pg.mkQApp().processEvents()
 
 
-def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], colored_edges: list(tuple) = [], title='', is_frame=True, frame_duration=0.01):
+def plot_graph(g: graph.V2CGraph,
+               highlighted_vertex=None,
+               colored_vertices=[],
+               colored_edges=[],
+               edges_color=[255, 0, 0, 1],
+               title='',
+               is_frame=True,
+               frame_duration=0.01):
     ''' Plots the graph. If is_frame is True, pauses the program for frame_duration (to be used in loops).'''
     if not view or not lineWidget or not vertexWidget:
         print("Error: window not initialized properly")
@@ -37,7 +43,7 @@ def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], co
     if title:
         view.setWindowTitle(title)
     vertices, vColors, vSizes, lines, lColors = [], [], [], [], []
-    for node, node_vec in graph.nodes(data='vector'):
+    for node, node_vec in g.nodes(data='vector'):
         vertices.append(np.array(
             node_vec
         ))
@@ -51,15 +57,15 @@ def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], co
             vColors.append(np.array([255, 0, 0, 1]))
             vSizes.append(4)
     lines = []
-    for edge in graph.edges:
+    for edge in g.edges:
         u, v = edge
         lines.append(
-            np.array(vertex_pos(graph, u)))
+            np.array(g.vertex_pos(u)))
         lines.append(
-            np.array(vertex_pos(graph, v)))
-        if sorted(edge) in map(sorted, colored_edges):
-            lColors.append(np.array([255, 0, 0, 1]))
-            lColors.append(np.array([255, 0, 0, 1]))
+            np.array(g.vertex_pos(v)))
+        if tuple(sorted(edge)) in graph.sort_edges(colored_edges):
+            lColors.append(np.array(edges_color))
+            lColors.append(np.array(edges_color))
         else:
             lColors.append(np.array([255, 255, 255, 1]))
             lColors.append(np.array([255, 255, 255, 1]))
@@ -72,8 +78,8 @@ def plot_graph(graph: nx.Graph, highlighted_vertex=None, colored_vertices=[], co
         responsive_sleep(frame_duration)
 
 
-def plot_cycles(graph: nx.Graph, paths: dict):
+def plot_cycles(graph: graph.V2CGraph, paths: dict):
     for node in paths:
         for path in paths[node]:
             plot_graph(graph, colored_vertices=path, highlighted_vertex=node,
-                       colored_edges=path_to_edges(path))
+                       colored_edges=graph.path_to_edges(path))

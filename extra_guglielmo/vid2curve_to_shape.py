@@ -1,8 +1,7 @@
-import networkx as nx
 import argparse
 import visualize
-import graph_utils as graph
-import time
+import v2c_graph as graph
+from mesh import Mesh
 
 
 def parse_arguments():
@@ -21,14 +20,13 @@ def main():
     args = parse_arguments()
     if args.plot:
         visualize.init_window()
-    g = graph.graph_from_obj(args.input_file)
-    graph.simplify_edges(g,
-                         visualize=args.plot == 'reduction' or args.plot == 'all')
-    graph.merge_close_vecs(g,
-                           visualize=args.plot == 'merging' or args.plot == 'all')
-    graph.get_triangles(g,
-                        visualize=args.plot == 'triangles' or args.plot == 'all')
-    graph.graph_to_obj(g, (args.out_file)+'.obj')
+    g = graph.V2CGraph.from_obj(args.input_file)
+    g.simplify_edges(visualize=args.plot == 'reduction' or args.plot == 'all')
+    g.merge_close_vecs(visualize=args.plot == 'merging' or args.plot == 'all')
+    g = g.relabel_nodes()
+    mesh = Mesh.from_graph(g,
+                           visualize=args.plot == 'triangles' or args.plot == 'all')
+    mesh.to_obj(args.out_file + '.obj')
 
 
 if __name__ == "__main__":
