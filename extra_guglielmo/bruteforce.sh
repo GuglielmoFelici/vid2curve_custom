@@ -10,7 +10,7 @@ for fl in $( seq $2 $4 $3 ); do
     sed -i'.bak' "s/FocalLength = .*/FocalLength = $fl/" /opt/vid2curve/examples/$1/local_config.ini 
     for iter in {1..3}; do
         echo -n executing try $iter for focal length $fl... 
-        ./Display > /dev/null 2>&1 # TODO launch in subshell to avoid garbage output
+        timeout 15m ./Display > /dev/null 2>&1 # TODO launch in subshell to avoid garbage output
         mv curves.obj $fl/$iter.obj 2>/dev/null && echo " OK" || echo " FAIL"
     done
 done

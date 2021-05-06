@@ -130,7 +130,9 @@ void Model::FeedExtractor(CurveExtractor *extractor) {
     auto new_view = new View(extractor, global_view_ticker_, focal_length_);
     VLOG(0) << "Build new view time: " << stop_watch.TimeDuration();
     UpdateDataStructure();
+
     VLOG(0) << "Update data structure time: " << stop_watch.TimeDuration();
+    LOG(INFO) << "curve_network_ size: " << curve_network_->n_points_;
     std::vector<std::pair<Eigen::Matrix3d, Eigen::Vector3d>> pose_candidates;
     pose_candidates.emplace_back(last_R_, last_T_);
     CHECK_GT(views_.size(), 0);

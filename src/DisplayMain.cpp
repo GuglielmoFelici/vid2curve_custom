@@ -17,6 +17,8 @@
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_logtostderr = true;
+  // per parametrizzare il log da riga di comando @guglielmo SWITCH
+    //  FLAGS_minloglevel = argc > 1 ? atoi(argv[1]) : 3; // LOG level: 3 -> FATAL
   FLAGS_minloglevel = 0; // LOG level: 3 -> FATAL
 
   // verbose log aggiunto da me @guglielmo

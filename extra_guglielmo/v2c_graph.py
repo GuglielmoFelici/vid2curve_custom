@@ -49,11 +49,11 @@ class V2CGraph(nx.Graph):
     def vertex_pos(self, v: int) -> List[float]:
         return self.nodes[v]['vector']
 
-    def sorted_edges(self) -> List[Tuple]:
+    def undirected_edges(self) -> List[Tuple]:
         return sort_edges(self.edges)
 
     def has_edge(self, edge) -> bool:
-        return tuple(sorted(edge)) in self.sorted_edges()
+        return tuple(sorted(edge)) in self.undirected_edges()
 
     def vert_dist(self, u: int, v: int) -> float:
         sqrd_dist = np.sum((np.array(self.vertex_pos(u)) -
@@ -68,7 +68,7 @@ class V2CGraph(nx.Graph):
             An edge's degree is the amount of cycles it belongs too.  '''
         cycles = set()  # performance
         curr_path = []
-        degrees = {edge: 0 for edge in self.sorted_edges()}
+        degrees = {edge: 0 for edge in self.undirected_edges()}
 
         def find_cycles(start):
             curr_path.append(start)
