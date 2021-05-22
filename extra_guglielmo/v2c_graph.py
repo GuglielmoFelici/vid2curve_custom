@@ -103,10 +103,10 @@ class V2CGraph(nx.Graph):
             Removes every node with 2 adjacents (read "is not a triangle vertex in the mesh").
         '''
         visited = [False for _ in range(self.size())]
-        stack = [next((n for n in self.nodes if self.degree(n) == 2), None)]
+        stack = [next((n for n in self.nodes if self.degree(n) <= 2), None)]
         if not stack[0]:
             return
-        while stack:
+        while stack and stack[0]:
             node = stack.pop()
             adjacencents = list(self.adj[node])
             if not visited[node]:
@@ -115,6 +115,7 @@ class V2CGraph(nx.Graph):
                           if not visited[n] and n not in stack]
                 if visualize:
                     plot.plot_graph(self,
+                                    frame_duration=2,
                                     highlighted_vertex=node,
                                     colored_vertices=[
                                         node for node in self.nodes if visited[node]],
@@ -123,12 +124,18 @@ class V2CGraph(nx.Graph):
                     u, v = adjacencents
                     self.remove_node(node)
                     self.add_edge(u, v)
+                elif self.degree(node) <= 1:
+                    self.remove_node(node)
+                # supporto per grafi non connessi:
+                # if not stack:
+                #     stack = [
+                #         next((n for n in self.nodes if self.degree(n) <= 2), None)]
 
-    def merge_close_vecs(self, visualize=False):
+    def merge_close_vecs(self, sensitivity, visualize=False):
         avg_edge_len = self.mean_edge_len()
 
         def next_small_edge(): return next((edge for edge in self.edges
-                                            if self.vert_dist(*edge) < (avg_edge_len/10)),
+                                            if self.vert_dist(*edge) < (avg_edge_len/sensitivity)),
                                            None)
         edge = next_small_edge()
         while edge:
