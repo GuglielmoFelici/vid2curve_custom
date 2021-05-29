@@ -39,7 +39,7 @@ class V2CGraph(nx.Graph):
             destFile.writelines(vertices + lines)
 
     def relabel_nodes(self) -> V2CGraph:
-        ''' Remaps node tags to numbers in [1, N] to ensure OBJ compatibility. Returns a new graph.  '''
+        ''' Remaps node tags to numbers in [1, N] to ensure OBJ compatibility. Returns a new graph. '''
         return V2CGraph(
             graph=nx.relabel_nodes(
                 self,
@@ -63,9 +63,10 @@ class V2CGraph(nx.Graph):
     def mean_edge_len(self) -> float:
         return sum([self.vert_dist(*edge) for edge in self.edges]) / self.number_of_edges()
 
-    def find_cycles(self, length, visualize=False) -> (List[List[Tuple]], Dict[Tuple, int]):
+    def find_cycles(self, length, visualize=False) -> (Tuple[List[List[Tuple]], Dict[Tuple, int]]):
         ''' Returns a list of cycles (where each cycle is a list of sorted edges) and a dictionary with sorted edges as keys and edges' degrees as values.
-            An edge's degree is the amount of cycles it belongs too.  '''
+            An edge's degree is the amount of cycles it belongs too. '''
+        length += 1  # use number of vertices, not edges
         cycles = set()  # performance
         curr_path = []
         degrees = {edge: 0 for edge in self.undirected_edges()}
@@ -126,7 +127,7 @@ class V2CGraph(nx.Graph):
                     self.add_edge(u, v)
                 elif self.degree(node) <= 1:
                     self.remove_node(node)
-                # supporto per grafi non connessi:
+                # non connected graph support:
                 # if not stack:
                 #     stack = [
                 #         next((n for n in self.nodes if self.degree(n) <= 2), None)]

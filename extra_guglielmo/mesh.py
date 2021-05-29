@@ -10,17 +10,17 @@ class Mesh:
         self.vertices = vertices
         self.triangles = triangles
 
-    @classmethod
+    @classmethod  # TODO implementare iterazione: triangoli vanno rimossi e gradi degli archi ricalcolati
     def from_graph(cls, graph: V2CGraph, visualize=False) -> Mesh:
-        triangles, degrees = graph.find_cycles(4, visualize=visualize)
+        triangles, degrees = graph.find_cycles(3, visualize=visualize)
         vertices = np.array(
             [vec for _, vec in graph.nodes(data='vector')])
         faces = np.empty((0, 3), dtype=np.int32)
         for tr in triangles:
-            if any(degrees[edge] == 2 for edge in tr):  # is not an inner face
+            if any(degrees[edge] == 2 for edge in tr):  # Rule 2: is not an inner face
                 faces = np.append(faces,
                                   [list(reduce(lambda edge1, edge2:
-                                               set(edge1) | set(edge2), tr))],  # {(1,2), (2,3), (3,1)} -> [[1,2,3]]
+                                               set(edge1) | set(edge2), tr))],  # [(1,2), (2,3), (3,1)] -> [[1,2,3]]
                                   axis=0)
         return Mesh(vertices, faces)
 

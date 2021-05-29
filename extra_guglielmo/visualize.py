@@ -1,15 +1,17 @@
-import pyqtgraph.opengl as gl
-import pyqtgraph as pg
-import numpy as np
 import v2c_graph as graph
 import time
 
-
 view = lineWidget = vertexWidget = None
+gl = pg = np = None
+active = False
 
 
-def init_window():
-    global view, lineWidget, vertexWidget
+def init():
+    global view, lineWidget, vertexWidget, gl, pg, np, active
+    # only import if needed
+    import pyqtgraph.opengl as gl
+    import pyqtgraph as pg
+    import numpy as np
     pg.mkQApp()
     # make a widget to display 3D objects
     view = gl.GLViewWidget()
@@ -18,6 +20,7 @@ def init_window():
     view.addItem(lineWidget)
     view.addItem(vertexWidget)
     view.show()
+    active = True
 
 
 def responsive_sleep(secs: int):
@@ -37,7 +40,7 @@ def plot_graph(g: graph.V2CGraph,
                is_frame=True,
                frame_duration=0.01):
     ''' Plots the graph. If is_frame is True, pauses the program for frame_duration (to be used in loops).'''
-    if not view or not lineWidget or not vertexWidget:
+    if not active:
         print("Error: window not initialized properly")
         return False
     if title:
